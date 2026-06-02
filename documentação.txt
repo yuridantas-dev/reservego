@@ -1,0 +1,16 @@
+Sistema com a senha dos usuarios criptografados
+    arquivo - security.py
+        import bcrypt
+
+corpo de requisição criado
+    arquivo - models.py
+        from sqlmodel import Field, SQLModel
+
+banco de dados sqlite no vscode funcionando - configurações do banco
+    arquivo - database.py
+        from typing import Annotated
+        from fastapi import Depends
+        from sqlmodel import Session, SQLModel, create_engine
+
+Frontend criado com erro de deslogar toda vez q o faz alguma ação dentro do Sistema
+    arquivo - index.html

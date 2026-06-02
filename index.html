@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>ReserveGo — Sistema de Reserva</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #0d0f14;
+    --surface:   #141720;
+    --surface2:  #1c2030;
+    --border:    #ffffff12;
+    --border2:   #ffffff22;
+    --text:      #e8eaf0;
+    --muted:     #8a90a4;
+    --accent:    #4f8ef7;
+    --accent2:   #3a6fcc;
+    --success:   #30c97e;
+    --danger:    #f05d5d;
+    --warning:   #f5a623;
+    --radius:    12px;
+    --radius-sm: 8px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  h1, h2, h3, .logo { font-family: 'Syne', sans-serif; }
+
+  /* ─── UTILITÁRIOS ─── */
+  .hidden { display: none !important; }
+  .flex { display: flex; }
+  .items-center { align-items: center; }
+  .gap-8  { gap: 8px; }
+  .gap-12 { gap: 12px; }
+  .gap-16 { gap: 16px; }
+  .gap-24 { gap: 24px; }
+  .flex-1 { flex: 1; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+
+  /* ─── BOTÕES ─── */
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 20px; border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 500;
+    cursor: pointer; border: none; transition: all .18s ease;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent2); }
+  .btn-ghost {
+    background: transparent; color: var(--muted);
+    border: 1px solid var(--border2);
+  }
+  .btn-ghost:hover { color: var(--text); border-color: var(--border2); background: var(--surface2); }
+  .btn-danger { background: #f05d5d22; color: var(--danger); border: 1px solid #f05d5d33; }
+  .btn-danger:hover { background: #f05d5d33; }
+  .btn-success { background: #30c97e22; color: var(--success); border: 1px solid #30c97e33; }
+  .btn-success:hover { background: #30c97e33; }
+  .btn-sm { padding: 6px 14px; font-size: 13px; }
+  .btn-full { width: 100%; justify-content: center; }
+
+  /* ─── INPUTS ─── */
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-size: 13px; color: var(--muted); font-weight: 500; }
+  .field input, .field select {
+    background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: var(--radius-sm); padding: 10px 14px;
+    color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px;
+    outline: none; transition: border-color .15s;
+  }
+  .field input:focus, .field select:focus { border-color: var(--accent); }
+  .field select option { background: var(--surface2); }
+
+  /* ─── CARDS ─── */
+  .card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px;
+  }
+  .card-title {
+    font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 600;
+    margin-bottom: 16px; color: var(--text);
+  }
+
+  /* ─── BADGES ─── */
+  .badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 500;
+  }
+  .badge-success { background: #30c97e22; color: var(--success); }
+  .badge-danger  { background: #f05d5d22; color: var(--danger); }
+  .badge-warning { background: #f5a62322; color: var(--warning); }
+  .badge-info    { background: #4f8ef722; color: var(--accent); }
+
+  /* ─── TOAST ─── */
+  #toast-container {
+    position: fixed; top: 20px; right: 20px; z-index: 9999;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .toast {
+    padding: 12px 18px; border-radius: var(--radius-sm);
+    font-size: 14px; font-weight: 500; min-width: 240px;
+    animation: slideIn .25s ease; border: 1px solid transparent;
+  }
+  .toast-success { background: #0f2d1f; color: var(--success); border-color: #30c97e33; }
+  .toast-error   { background: #2d0f0f; color: var(--danger);  border-color: #f05d5d33; }
+  @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+
+  /* ─── MODAL ─── */
+  .modal-overlay {
+    position: fixed; inset: 0; background: #00000088; z-index: 1000;
+    display: flex; align-items: center; justify-content: center; padding: 20px;
+  }
+  .modal {
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: var(--radius); padding: 28px; width: 100%; max-width: 480px;
+    animation: modalIn .2s ease;
+  }
+  @keyframes modalIn { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: scale(1); } }
+  .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .modal-title  { font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 600; }
+  .modal-close  { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 20px; line-height: 1; }
+  .modal-close:hover { color: var(--text); }
+  .modal-form   { display: flex; flex-direction: column; gap: 14px; }
+  .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+
+  /* ─── TABELA ─── */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  th {
+    text-align: left; padding: 10px 14px; font-size: 12px; font-weight: 600;
+    color: var(--muted); text-transform: uppercase; letter-spacing: .06em;
+    border-bottom: 1px solid var(--border);
+  }
+  td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: var(--surface2); }
+  .actions { display: flex; gap: 6px; }
+
+  /* ─── STAT CARD ─── */
+  .stat-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px;
+  }
+  .stat-label { font-size: 12px; color: var(--muted); font-weight: 500; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px; }
+  .stat-value { font-family: 'Syne', sans-serif; font-size: 32px; font-weight: 700; color: var(--text); }
+  .stat-sub   { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+  /* ─── TELA DE LOGIN ─── */
+  #screen-login {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    background: var(--bg);
+  }
+  .login-box {
+    width: 100%; max-width: 420px;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: 16px; padding: 40px;
+  }
+  .login-logo {
+    font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 700;
+    color: var(--accent); margin-bottom: 6px; letter-spacing: -.5px;
+  }
+  .login-sub { font-size: 14px; color: var(--muted); margin-bottom: 32px; }
+  .login-form { display: flex; flex-direction: column; gap: 16px; }
+  .login-tabs { display: flex; gap: 0; margin-bottom: 24px; border: 1px solid var(--border2); border-radius: var(--radius-sm); overflow: hidden; }
+  .login-tab {
+    flex: 1; padding: 10px; text-align: center; font-size: 14px; font-weight: 500;
+    cursor: pointer; border: none; background: transparent; color: var(--muted);
+    transition: all .15s;
+  }
+  .login-tab.active { background: var(--accent); color: #fff; }
+
+  /* ─── APP SHELL ─── */
+  #screen-app { min-height: 100vh; display: flex; flex-direction: column; }
+
+  .topbar {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 0 28px; height: 60px; display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .topbar-logo { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; color: var(--accent); letter-spacing: -.5px; }
+  .topbar-user { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--muted); }
+  .avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: var(--accent2); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700;
+  }
+
+  .sidebar-tabs {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 0 28px; display: flex; gap: 4px;
+  }
+  .tab-btn {
+    padding: 14px 18px; font-size: 14px; font-weight: 500;
+    background: none; border: none; color: var(--muted); cursor: pointer;
+    border-bottom: 2px solid transparent; margin-bottom: -1px;
+    transition: all .15s;
+  }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-btn:hover:not(.active) { color: var(--text); }
+
+  .content { flex: 1; padding: 28px; max-width: 1100px; margin: 0 auto; width: 100%; }
+
+  .page-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+  .page-title  { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; }
+
+  /* ─── EMPTY STATE ─── */
+  .empty {
+    text-align: center; padding: 48px 20px;
+    color: var(--muted); font-size: 14px;
+  }
+  .empty-icon { font-size: 36px; margin-bottom: 12px; opacity: .4; }
+
+  /* ─── VEÍCULO CARD (usuário) ─── */
+  .veiculo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+  .veiculo-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px;
+    display: flex; flex-direction: column; gap: 12px;
+    transition: border-color .2s;
+  }
+  .veiculo-card:hover { border-color: var(--border2); }
+  .veiculo-card-title { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 600; }
+  .veiculo-card-sub   { font-size: 13px; color: var(--muted); }
+  .veiculo-placa {
+    font-family: 'Syne', sans-serif; font-size: 13px;
+    background: var(--surface2); border: 1px solid var(--border2);
+    border-radius: 6px; padding: 4px 10px; display: inline-block; letter-spacing: .1em;
+  }
+
+  /* ─── RESERVA CARD (usuário) ─── */
+  .reserva-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 18px;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .reserva-datas { display: flex; gap: 12px; font-size: 13px; color: var(--muted); }
+  .reserva-datas span { display: flex; align-items: center; gap: 4px; }
+
+  /* ─── FILTRO DATAS ─── */
+  .filtro-datas {
+    display: flex; align-items: flex-end; gap: 12px;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 16px; margin-bottom: 20px;
+  }
+  .filtro-datas .field { flex: 1; }
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div id="toast-container"></div>
+
+<!-- ══════════════════════════════════════════
+     TELA: LOGIN / CADASTRO
+══════════════════════════════════════════ -->
+<div id="screen-login">
+  <div class="login-box">
+    <div class="login-logo">ReserveGo</div>
+    <p class="login-sub">Sistema de reserva veicular</p>
+
+    <div class="login-tabs">
+      <button class="login-tab active" onclick="switchLoginTab('login')">Entrar</button>
+      <button class="login-tab" onclick="switchLoginTab('cadastro')">Cadastrar</button>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="tab-login" class="login-form">
+      <div class="field">
+        <label>E-mail</label>
+        <input id="login-email" type="email" placeholder="seu@email.com" />
+      </div>
+      <div class="field">
+        <label>Senha</label>
+        <input id="login-senha" type="password" placeholder="••••••••" />
+      </div>
+      <button class="btn btn-primary btn-full" onclick="fazerLogin()">Entrar</button>
+    </div>
+
+    <!-- CADASTRO -->
+    <div id="tab-cadastro" class="login-form hidden">
+      <div class="field">
+        <label>Nome completo</label>
+        <input id="cad-nome" type="text" placeholder="João Silva" />
+      </div>
+      <div class="grid-2">
+        <div class="field">
+          <label>CPF</label>
+          <input id="cad-cpf" type="text" placeholder="000.000.000-00" />
+        </div>
+        <div class="field">
+          <label>CNH</label>
+          <input id="cad-cnh" type="text" placeholder="00000000000" />
+        </div>
+      </div>
+      <div class="field">
+        <label>E-mail</label>
+        <input id="cad-email" type="email" placeholder="seu@email.com" />
+      </div>
+      <div class="field">
+        <label>Senha</label>
+        <input id="cad-senha" type="password" placeholder="••••••••" />
+      </div>
+      <button class="btn btn-primary btn-full" onclick="fazerCadastro()">Criar conta</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TELA: APP
+══════════════════════════════════════════ -->
+<div id="screen-app" class="hidden">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-logo">ReserveGo</div>
+    <div class="topbar-user">
+      <div class="avatar" id="user-avatar">?</div>
+      <span id="user-nome">Usuário</span>
+      <button class="btn btn-ghost btn-sm" onclick="logout()">Sair</button>
+    </div>
+  </div>
+
+  <!-- TABS DE NAVEGAÇÃO -->
+  <div class="sidebar-tabs" id="nav-tabs"></div>
+
+  <!-- CONTEÚDO -->
+  <div class="content" id="app-content"></div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MODAIS
+══════════════════════════════════════════ -->
+<div id="modal-container"></div>
+
+<script>
+const API = 'http://127.0.0.1:8000';
+let usuario = null;
+
+const _salvo = localStorage.getItem('usuario');
+if (_salvo) {
+  usuario = JSON.parse(_salvo);
+}
+
+// ─── TOAST ──────────────────────────────────
+function toast(msg, tipo = 'success') {
+  const el = document.createElement('div');
+  el.className = `toast toast-${tipo}`;
+  el.textContent = msg;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+// ─── MODAL ──────────────────────────────────
+function abrirModal(titulo, conteudo, onConfirm, labelConfirm = 'Salvar') {
+  const container = document.getElementById('modal-container');
+  container.innerHTML = `
+    <div class="modal-overlay" id="modal-overlay">
+      <div class="modal">
+        <div class="modal-header">
+          <span class="modal-title">${titulo}</span>
+          <button type="button" class="modal-close" id="modal-close-btn">✕</button>
+        </div>
+        <div class="modal-form" id="modal-body">${conteudo}</div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-ghost" id="modal-cancel-btn">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="modal-confirm">${labelConfirm}</button>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('modal-confirm').addEventListener('click', onConfirm);
+  document.getElementById('modal-cancel-btn').addEventListener('click', fecharModalForce);
+  document.getElementById('modal-close-btn').addEventListener('click', fecharModalForce);
+}
+
+function fecharModalForce() {
+  document.getElementById('modal-container').innerHTML = '';
+}
+
+// ─── AUTH ────────────────────────────────────
+function switchLoginTab(tab) {
+  document.querySelectorAll('.login-tab').forEach((t, i) => {
+    t.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'cadastro'));
+  });
+  document.getElementById('tab-login').classList.toggle('hidden', tab !== 'login');
+  document.getElementById('tab-cadastro').classList.toggle('hidden', tab !== 'cadastro');
+}
+
+async function fazerLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const senha = document.getElementById('login-senha').value;
+  if (!email || !senha) return toast('Preencha todos os campos.', 'error');
+  try {
+    const r = await fetch(`${API}/login?email=${encodeURIComponent(email)}&senha=${encodeURIComponent(senha)}`, { method: 'POST' });
+    const d = await r.json();
+    if (!r.ok) return toast(d.detail || 'Erro ao entrar.', 'error');
+    usuario = d;
+    localStorage.setItem('usuario', JSON.stringify(d));
+    iniciarApp();
+  } catch { toast('Servidor inacessível.', 'error'); }
+}
+
+async function fazerCadastro() {
+  const body = {
+    nome: document.getElementById('cad-nome').value.trim(),
+    cpf:  document.getElementById('cad-cpf').value.trim(),
+    cnh:  document.getElementById('cad-cnh').value.trim(),
+    email: document.getElementById('cad-email').value.trim(),
+    senha: document.getElementById('cad-senha').value,
+    tipo_usuario: 'usuario'
+  };
+  if (!body.nome || !body.cpf || !body.cnh || !body.email || !body.senha)
+    return toast('Preencha todos os campos.', 'error');
+  try {
+    const r = await fetch(`${API}/usuarios`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    const d = await r.json();
+    if (!r.ok) return toast(d.detail || 'Erro ao cadastrar.', 'error');
+    toast('Conta criada! Faça login.');
+    switchLoginTab('login');
+  } catch { toast('Servidor inacessível.', 'error'); }
+}
+
+function iniciarApp() {
+  document.getElementById('screen-login').classList.add('hidden');
+  document.getElementById('screen-app').classList.remove('hidden');
+  const iniciais = usuario.nome.split(' ').map(p => p[0]).slice(0,2).join('').toUpperCase();
+  document.getElementById('user-avatar').textContent = iniciais;
+  document.getElementById('user-nome').textContent = usuario.nome;
+  if (usuario.tipo_usuario === 'admin') renderAdminNav();
+  else renderUsuarioNav();
+}
+
+function logout() {
+  usuario = null;
+  localStorage.removeItem('aba_atual');
+  localStorage.removeItem('usuario');
+  document.getElementById('screen-app').classList.add('hidden');
+  document.getElementById('screen-login').classList.remove('hidden');
+  document.getElementById('app-content').innerHTML = '';
+}
+
+// ─── NAVEGAÇÃO ───────────────────────────────
+function setTab(id, fn) {
+  document.querySelectorAll('.tab-btn').forEach(t => t.classList.toggle('active', t.dataset.tab === id));
+  localStorage.setItem('aba_atual', id);
+  fn();
+}
+
+function renderAdminNav() {
+  const tabs = [
+    { id: 'dashboard', label: 'Dashboard', fn: renderDashboard },
+    { id: 'usuarios',  label: 'Usuários',  fn: renderUsuarios },
+    { id: 'veiculos',  label: 'Veículos',  fn: renderVeiculos },
+    { id: 'reservas',  label: 'Reservas',  fn: renderReservas },
+  ];
+  document.getElementById('nav-tabs').innerHTML = tabs.map(t =>
+    `<button class="tab-btn" data-tab="${t.id}">${t.label}</button>`
+  ).join('');
+  tabs.forEach(t => {
+    document.querySelector(`.tab-btn[data-tab="${t.id}"]`).addEventListener('click', () => setTab(t.id, t.fn));
+  });
+  const abaAtual = localStorage.getItem('aba_atual') || 'dashboard';
+  const tabInicial = tabs.find(t => t.id === abaAtual) || tabs[0];
+  setTab(tabInicial.id, tabInicial.fn);
+}
+
+function renderUsuarioNav() {
+  const tabs = [
+    { id: 'veiculos', label: 'Veículos Disponíveis', fn: renderVeiculosUsuario },
+    { id: 'minhas',   label: 'Minhas Reservas',      fn: renderMinhasReservas },
+  ];
+  document.getElementById('nav-tabs').innerHTML = tabs.map(t =>
+    `<button class="tab-btn" data-tab="${t.id}">${t.label}</button>`
+  ).join('');
+  tabs.forEach(t => {
+    document.querySelector(`.tab-btn[data-tab="${t.id}"]`).addEventListener('click', () => setTab(t.id, t.fn));
+  });
+  const abaAtual = localStorage.getItem('aba_atual') || 'veiculos';
+  const tabInicial = tabs.find(t => t.id === abaAtual) || tabs[0];
+  setTab(tabInicial.id, tabInicial.fn);
+}
+
+// ═══════════════════════════════════════════════════
+// ADMIN — DASHBOARD
+// ═══════════════════════════════════════════════════
+async function renderDashboard() {
+  document.getElementById('app-content').innerHTML = '<p style="color:var(--muted);font-size:14px">Carregando...</p>';
+  const [usuarios, veiculos, reservas] = await Promise.all([
+    fetch(`${API}/usuarios`).then(r=>r.json()),
+    fetch(`${API}/veiculos`).then(r=>r.json()),
+    fetch(`${API}/reservas`).then(r=>r.json()),
+  ]);
+  const ativos = reservas.filter(r => new Date(r.data_fim) >= new Date()).length;
+  const usuarioMapD = {};
+  usuarios.forEach(u => usuarioMapD[u.id] = u.nome);
+  const veiculoMapD = {};
+  veiculos.forEach(v => veiculoMapD[v.id] = v.marca + ' ' + v.modelo);
+  document.getElementById('app-content').innerHTML = `
+    <div class="page-header"><h1 class="page-title">Dashboard</h1></div>
+    <div class="grid-4" style="margin-bottom:28px">
+      <div class="stat-card">
+        <div class="stat-label">Usuários</div>
+        <div class="stat-value">${usuarios.length}</div>
+        <div class="stat-sub">cadastrados</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Veículos</div>
+        <div class="stat-value">${veiculos.length}</div>
+        <div class="stat-sub">no sistema</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Reservas</div>
+        <div class="stat-value">${reservas.length}</div>
+        <div class="stat-sub">no total</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Ativas</div>
+        <div class="stat-value" style="color:var(--success)">${ativos}</div>
+        <div class="stat-sub">em andamento</div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title">Últimas reservas</div>
+        ${reservas.length === 0
+          ? '<p style="color:var(--muted);font-size:14px">Nenhuma reserva.</p>'
+          : `<div class="table-wrap"><table>
+              <thead><tr><th>ID</th><th>Usuário</th><th>Veículo</th><th>Início</th><th>Fim</th></tr></thead>
+              <tbody>${reservas.slice(-5).reverse().map(r => `
+                <tr>
+                  <td style="color:var(--muted)">#${r.id}</td>
+                  <td>${usuarioMapD[r.id_usuario] || '#' + r.id_usuario}</td>
+                  <td>${veiculoMapD[r.id_veiculo] || '#' + r.id_veiculo}</td>
+                  <td>${r.data_inicio}</td>
+                  <td>${r.data_fim}</td>
+                </tr>`).join('')}
+              </tbody>
+            </table></div>`}
+      </div>
+      <div class="card">
+        <div class="card-title">Frota</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          ${veiculos.length === 0
+            ? '<p style="color:var(--muted);font-size:14px">Nenhum veículo.</p>'
+            : veiculos.map(v => `
+              <div style="display:flex;align-items:center;justify-content:space-between;padding:10px;background:var(--surface2);border-radius:var(--radius-sm)">
+                <div>
+                  <div style="font-size:14px;font-weight:500">${v.marca} ${v.modelo}</div>
+                  <div style="font-size:12px;color:var(--muted)">${v.placa}</div>
+                </div>
+                <span class="badge ${v.status === 'disponivel' ? 'badge-success' : 'badge-danger'}">${v.status}</span>
+              </div>`).join('')}
+        </div>
+      </div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════
+// ADMIN — USUÁRIOS
+// ═══════════════════════════════════════════════════
+async function renderUsuarios() {
+  const lista = await fetch(`${API}/usuarios`).then(r=>r.json());
+  document.getElementById('app-content').innerHTML = `
+    <div class="page-header">
+      <h1 class="page-title">Usuários</h1>
+      <button class="btn btn-primary" data-action="criar-usuario">+ Novo usuário</button>
+    </div>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ID</th><th>Nome</th><th>E-mail</th><th>CPF</th><th>Tipo</th><th>Ações</th></tr></thead>
+          <tbody id="tbody-usuarios">
+            ${lista.map(u => linhaUsuario(u)).join('')}
+          </tbody>
+        </table>
+        ${lista.length === 0 ? '<div class="empty"><div class="empty-icon">👤</div>Nenhum usuário cadastrado.</div>' : ''}
+      </div>
+    </div>`;
+}
+
+function linhaUsuario(u) {
+  return `<tr id="u-row-${u.id}">
+    <td style="color:var(--muted)">#${u.id}</td>
+    <td style="font-weight:500">${u.nome}</td>
+    <td style="color:var(--muted)">${u.email}</td>
+    <td style="color:var(--muted)">${u.cpf}</td>
+    <td><span class="badge ${u.tipo_usuario === 'admin' ? 'badge-warning' : 'badge-info'}">${u.tipo_usuario}</span></td>
+    <td><div class="actions">
+      <button class="btn btn-ghost btn-sm" data-action="editar-usuario" data-id="${u.id}" data-nome="${u.nome}" data-email="${u.email}" data-tipo="${u.tipo_usuario}">Editar</button>
+      <button class="btn btn-danger btn-sm" data-action="delete-usuario" data-id="${u.id}">Excluir</button>
+    </div></td>
+  </tr>`;
+}
+
+function modalCriarUsuario() {
+  abrirModal('Novo usuário', `
+    <div class="field"><label>Nome</label><input id="m-nome" type="text"/></div>
+    <div class="grid-2">
+      <div class="field"><label>CPF</label><input id="m-cpf" type="text"/></div>
+      <div class="field"><label>CNH</label><input id="m-cnh" type="text"/></div>
+    </div>
+    <div class="field"><label>E-mail</label><input id="m-email" type="email"/></div>
+    <div class="field"><label>Senha</label><input id="m-senha" type="password"/></div>
+    <div class="field"><label>Tipo</label>
+      <select id="m-tipo"><option value="usuario">usuario</option><option value="admin">admin</option></select>
+    </div>`, criarUsuario);
+}
+
+async function criarUsuario() {
+  const body = {
+    nome: document.getElementById('m-nome').value.trim(),
+    cpf:  document.getElementById('m-cpf').value.trim(),
+    cnh:  document.getElementById('m-cnh').value.trim(),
+    email: document.getElementById('m-email').value.trim(),
+    senha: document.getElementById('m-senha').value,
+    tipo_usuario: document.getElementById('m-tipo').value,
+  };
+  if (!body.nome || !body.cpf || !body.cnh || !body.email || !body.senha)
+    return toast('Preencha todos os campos.', 'error');
+  const r = await fetch(`${API}/usuarios`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  const d = await r.json();
+  if (!r.ok) return toast(d.detail || 'Erro.', 'error');
+  fecharModalForce();
+  toast('Usuário criado!');
+  renderUsuarios();
+}
+
+function modalEditarUsuario(id, nome, email, tipo) {
+  abrirModal('Editar usuário', `
+    <div class="field"><label>Nome</label><input id="m-nome" type="text" value="${nome}"/></div>
+    <div class="field"><label>E-mail</label><input id="m-email" type="email" value="${email}"/></div>
+    <div class="field"><label>Nova senha (deixe em branco para manter)</label><input id="m-senha" type="password"/></div>
+    <div class="field"><label>Tipo</label>
+      <select id="m-tipo">
+        <option value="usuario" ${tipo==='usuario'?'selected':''}>usuario</option>
+        <option value="admin"   ${tipo==='admin'?'selected':''}>admin</option>
+      </select>
+    </div>`, () => salvarUsuario(id));
+}
+
+async function salvarUsuario(id) {
+  const body = {};
+  const nome  = document.getElementById('m-nome').value.trim();
+  const email = document.getElementById('m-email').value.trim();
+  const senha = document.getElementById('m-senha').value;
+  const tipo  = document.getElementById('m-tipo').value;
+  if (nome)  body.nome  = nome;
+  if (email) body.email = email;
+  if (senha) body.senha = senha;
+  body.tipo_usuario = tipo;
+  const r = await fetch(`${API}/usuarios/${id}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  const d = await r.json();
+  if (!r.ok) return toast(d.detail || 'Erro.', 'error');
+  fecharModalForce();
+  toast('Usuário atualizado!');
+  renderUsuarios();
+}
+
+function confirmarDeleteUsuario(id) {
+  abrirModal('Excluir usuário', `<p style="font-size:14px;color:var(--muted)">Tem certeza que deseja excluir o usuário <strong>#${id}</strong>? Esta ação não pode ser desfeita.</p>`,
+    () => deletarUsuario(id), 'Excluir');
+  document.getElementById('modal-confirm').className = 'btn btn-danger';
+}
+
+async function deletarUsuario(id) {
+  const r = await fetch(`${API}/usuarios/${id}`, { method:'DELETE' });
+  const d = await r.json();
+  if (!r.ok) return toast(d.detail || 'Erro.', 'error');
+  fecharModalForce();
+  toast('Usuário excluído.');
+  renderUsuarios();
+}
+
+// ═══════════════════════════════════════════════════
+// ADMIN — VEÍCULOS
+// ═══════════════════════════════════════════════════
+async function renderVeiculos() {
+  const lista = await fetch(`${API}/veiculos`).then(r=>r.json());
+  document.getElementById('app-content').innerHTML = `
+    <div class="page-header">
+      <h1 class="page-title">Veículos</h1>
+      <button class="btn btn-primary" data-action="criar-veiculo">+ Novo veículo</button>
+    </div>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ID</th><th>Marca</th><th>Modelo</th><th>Placa</th><th>Status</th><th>Ações</th></tr></thead>
+          <tbody>
+            ${lista.map(v => `<tr>
+              <td style="color:var(--muted)">#${v.id}</td>
+              <td>${v.marca}</td>
+              <td style="font-weight:500">${v.modelo}</td>
+              <td><span class="veiculo-placa">${v.placa}</span></td>
+              <td><span class="badge ${v.status==='disponivel'?'badge-success':'badge-danger'}">${v.status}</span></td>
+              <td><div class="actions">
+                <button class="btn btn-ghost btn-sm" data-action="editar-veiculo" data-id="${v.id}" data-marca="${v.marca}" data-modelo="${v.modelo}" data-placa="${v.placa}" data-status="${v.status}">Editar</button>
+                <button class="btn btn-danger btn-sm" data-action="delete-veiculo" data-id="${v.id}">Excluir</button>
+              </div></td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+        ${lista.length === 0 ? '<div class="empty"><div class="empty-icon">🚗</div>Nenhum veículo cadastrado.</div>' : ''}
+      </div>
+    </div>`;
+}
+
+function modalCriarVeiculo() {
+  abrirModal('Novo veículo', `
+    <div class="grid-2">
+      <div class="field"><label>Marca</label><input id="m-marca" type="text" placeholder="Toyota"/></div>
+      <div class="field"><label>Modelo</label><input id="m-modelo" type="text" placeholder="Corolla"/></div>
+    </div>
+    <div class="grid-2">
+      <div class="field"><label>Placa</label><input id="m-placa" type="text" placeholder="ABC-1234"/></div>
+      <div class="field"><label>Status</label>
+        <select id="m-status"><option value="disponivel">disponivel</option><option value="indisponivel">indisponivel</option></select>
+      </div>
+    </div>`, criarVeiculo);
+}
+
+async function criarVeiculo() {
+  const body = {
+    marca:  document.getElementById('m-marca').value.trim(),
+    modelo: document.getElementById('m-modelo').value.trim(),
+    placa:  document.getElementById('m-placa').value.trim(),
+    status: document.getElementById('m-status').value,
+  };
+  if (!body.marca || !body.modelo || !body.placa) return toast('Preencha todos os campos.', 'error');
+  const r = await fetch(`${API}/veiculos`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  const d = await r.json();
+  if (!r.ok) return toast(d.detail || 'Erro.', 'error');
+  fecharModalForce();
+  toast('Veículo cadastrado!');
+  renderVeiculos();
+}
+
+function modalEditarVeiculo(id, marca, modelo, placa, status) {
+  abrirModal('Editar veículo', `
+    <div class="grid-2">
+      <div class="field"><label>Marca</label><input id="m-marca" type="text" value="${marca}"/></div>
+      <div class="field"><label>Modelo</label><input id="m-modelo" type="text" value="${modelo}"/></div>
+    </div>
+    <div class="grid-2">
+      <div class="field"><label>Placa</label><input id="m-placa" type="text" value="${placa}"/></div>
+      <div class="field"><label>Status</label>
+        <select id="m-status">
+          <option value="disponivel"   ${status==='disponivel'?'selected':''}>disponivel</option>
+          <option value="indisponivel" ${status==='indisponivel'?'selected':''}>indisponivel</option>
+        </select>
+      </div>
+    </div>`, () => salvarVeiculo(id));
+}
+
+async function salvarVeiculo(id) {
+  const body = {
+    marca:  document.getElementById('m-marca').value.trim(),
+    modelo: document.getElementById('m-modelo').value.trim(),
+    placa:  document.getElementById('m-placa').value.trim(),
+    status: document.getElementById('m-status').value,
+  };
+  const r = await fetch(`${API}/veiculos/${id}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  const d = await r.json();
+  if (!r.ok) return toast(d.detail || 'Erro.', 'error');
+  fecharModalForce();
+  toast('Veículo atualizado!');
+  renderVeiculos();
+}
+
+function confirmarDeleteVeiculo(id) {
+  abrirModal('Excluir veículo', `<p style="font-size:14px;color:var(--muted)">Tem certeza que deseja excluir o veículo <strong>#${id}</strong>?</p>`,
+    () => deletarVeiculo(id), 'Excluir');
+  document.getElementById('modal-confirm').className = 'btn btn-danger';
+}
+
+async function deletarVeiculo(id) {
+  const r = await fetch(`${API}/veiculos/${id}`, { method:'DELETE' });
+  const d = await r.json();
+  if (!r.ok) return toast(d.detail || 'Erro.', 'error');
+  fecharModalForce();
+  toast('Veículo excluído.');
+  renderVeiculos();
+}
+
+// ═══════════════════════════════════════════════════
+// ADMIN — RESERVAS
+// ═══════════════════════════════════════════════════
+async function renderReservas() {
+  const [lista, usuarios, veiculos] = await Promise.all([
+    fetch(`${API}/reservas`).then(r=>r.json()),
+    fetch(`${API}/usuarios`).then(r=>r.json()),
+    fetch(`${API}/veiculos`).then(r=>r.json()),
+  ]);
+  const usuarioMap = {};
+  usuarios.forEach(u => usuarioMap[u.id] = u.nome);
+  const veiculoMap = {};
+  veiculos.forEach(v => veiculoMap[v.id] = v.marca + ' ' + v.modelo);
+  document.getElementById('app-content').innerHTML = `
+    <div class="page-header">
+      <h1 class="page-title">Reservas</h1>
+      <button class="btn btn-primary" data-action="criar-reserva">+ Nova reserva</button>
+    </div>
+    <div class="card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ID</th><th>Usuário</th><th>Veículo</th><th>Início</th><th>Fim</th><th>Ações</th></tr></thead>
+          <tbody>
+            ${lista.map(r => `<tr>
+              <td style="color:var(--muted)">#${r.id}</td>
+              <td>${usuarioMap[r.id_usuario] || '#' + r.id_usuario}</td>
+              <td>${veiculoMap[r.id_veiculo] || '#' + r.id_veiculo}</td>
+              <td>${r.data_inicio}</td>
+              <td>${r.data_fim}</td>
+              <td><div class="actions">
+                <button class="btn btn-ghost btn-sm" data-action="editar-reserva" data-id="${r.id}" data-inicio="${r.data_inicio}" data-fim="${r.data_fim}">Editar</button>
+                <button class="btn btn-danger btn-sm" data-action="delete-reserva" data-id="${r.id}">Excluir</button>
+              </div></td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+        ${lista.length === 0 ? '<div class="empty"><div class="empty-icon">📋</div>Nenhuma reserva.</div>' : ''}
+      </div>
+    </div>`;
+}
+
+function modalCriarReserva() {
+  abrirModal('Nova reserva', `
+    <div class="grid-2">
+      <div class="field"><label>ID do Usuário</label><input id="m-uid" type="number" min="1"/></div>
+      <div class="field"><label>ID do Veículo</label><input id="m-vid" type="number" min="1"/></div>
+    </div>
+    <div class="grid-2">
+      <div class="field"><label>Data início</label><input id="m-inicio" type="date"/></div>
+      <div class="field"><label>Data fim</label><input id="m-fim" type="date"/></div>
+    </div>`, criarReservaAdmin);
+}
+
+async function criarReservaAdmin() {
+  const body = {
+    id_usuario: parseInt(document.getElementById('m-uid').value),
+    id_veiculo: parseInt(document.getElementById('m-vid').value),
+    data_inicio: document.getElementById('m-inicio').value,
+    data_fim:    document.getElementById('m-fim').value,
+  };
+  if (!body.id_usuario || !body.id_veiculo || !body.data_inicio || !body.data_fim)
+    return toast('Preencha todos os campos.', 'error');
+  const r = await fetch(`${API}/reservas`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  const d = await r.json();
+  if (!r.ok) return toast(d.detail || 'Erro.', 'error');
+  fecharModalForce();
+  toast('Reserva criada!');
+  renderReservas();
+}
+
+function modalEditarReserva(id, inicio, fim) {
+  abrirModal('Editar reserva', `
+    <div class="grid-2">
+      <div class="field"><label>Data início</label><input id="m-inicio" type="date" value="${inicio}"/></div>
+      <div class="field"><label>Data fim</label><input id="m-fim" type="date" value="${fim}"/></div>
+    </div>`, () => salvarReserva(id));
+}
+
+async function salvarReserva(id) {
+  const body = {
+    data_inicio: document.getElementById('m-inicio').value,
+    data_fim:    document.getElementById('m-fim').value,
+  };
+  const r = await fetch(`${API}/reservas/${id}`, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  const d = await r.json();
+  if (!r.ok) return toast(d.detail || 'Erro.', 'error');
+  fecharModalForce();
+  toast('Reserva atualizada!');
+  renderReservas();
+}
+
+function confirmarDeleteReserva(id) {
+  abrirModal('Excluir reserva', `<p style="font-size:14px;color:var(--muted)">Tem certeza que deseja excluir a reserva <strong>#${id}</strong>?</p>`,
+    () => deletarReserva(id), 'Excluir');
+  document.getElementById('modal-confirm').className = 'btn btn-danger';
+}
+
+async function deletarReserva(id) {
+  const r = await fetch(`${API}/reservas/${id}`, { method:'DELETE' });
+  const d = await r.json();
+  if (!r.ok) return toast(d.detail || 'Erro.', 'error');
+  fecharModalForce();
+  toast('Reserva excluída.');
+  renderReservas();
+}
+
+// ═══════════════════════════════════════════════════
+// USUÁRIO COMUM — VEÍCULOS DISPONÍVEIS
+// ═══════════════════════════════════════════════════
+let veiculosSelecionados = [];
+let datasAtual = { inicio: '', fim: '' };
+
+async function renderVeiculosUsuario() {
+  document.getElementById('app-content').innerHTML = `
+    <div class="page-header"><h1 class="page-title">Veículos disponíveis</h1></div>
+    <div class="filtro-datas">
+      <div class="field">
+        <label>Data de início</label>
+        <input id="f-inicio" type="date" />
+      </div>
+      <div class="field">
+        <label>Data de fim</label>
+        <input id="f-fim" type="date" />
+      </div>
+      <button class="btn btn-primary" data-action="buscar-disponiveis">Buscar</button>
+    </div>
+    <div id="veiculos-resultado">
+      <div class="empty">
+        <div class="empty-icon">📅</div>
+        Selecione um período para ver os veículos disponíveis.
+      </div>
+    </div>`;
+}
+
+async function buscarDisponiveis() {
+  const inicio = document.getElementById('f-inicio').value;
+  const fim    = document.getElementById('f-fim').value;
+  if (!inicio || !fim) return;
+  if (inicio >= fim) return toast('A data de fim deve ser depois da de início.', 'error');
+
+  datasAtual = { inicio, fim };
+  const r = await fetch(`${API}/veiculos/disponiveis?data_inicio=${inicio}&data_fim=${fim}`);
+  const lista = await r.json();
+
+  if (lista.length === 0) {
+    document.getElementById('veiculos-resultado').innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">🚫</div>
+        Nenhum veículo disponível nesse período.
+      </div>`;
+    return;
+  }
+
+  document.getElementById('veiculos-resultado').innerHTML = `
+    <div class="veiculo-grid">
+      ${lista.map(v => `
+        <div class="veiculo-card">
+          <div>
+            <div class="veiculo-card-title">${v.marca} ${v.modelo}</div>
+            <div class="veiculo-card-sub" style="margin-top:4px">${v.placa}</div>
+          </div>
+          <span class="badge badge-success">disponível</span>
+          <button class="btn btn-primary btn-sm" data-action="reservar" data-id="${v.id}" data-nome="${v.marca} ${v.modelo}">
+            Reservar
+          </button>
+        </div>`).join('')}
+    </div>`;
+}
+
+function confirmarReserva(idVeiculo, nome) {
+  const { inicio, fim } = datasAtual;
+  abrirModal('Confirmar reserva', `
+    <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:16px;margin-bottom:4px">
+      <div style="font-size:14px;color:var(--muted);margin-bottom:4px">Veículo</div>
+      <div style="font-weight:600;font-size:16px">${nome}</div>
+    </div>
+    <div class="grid-2">
+      <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:14px">
+        <div style="font-size:12px;color:var(--muted)">Início</div>
+        <div style="font-weight:500;margin-top:4px">${inicio}</div>
+      </div>
+      <div style="background:var(--surface2);border-radius:var(--radius-sm);padding:14px">
+        <div style="font-size:12px;color:var(--muted)">Fim</div>
+        <div style="font-weight:500;margin-top:4px">${fim}</div>
+      </div>
+    </div>`,
+    () => fazerReserva(idVeiculo), 'Confirmar reserva');
+}
+
+async function fazerReserva(idVeiculo) {
+  const body = {
+    id_usuario: usuario.id,
+    id_veiculo: idVeiculo,
+    data_inicio: datasAtual.inicio,
+    data_fim:    datasAtual.fim,
+  };
+  const r = await fetch(`${API}/reservas`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+  const d = await r.json();
+  if (!r.ok) return toast(d.detail || 'Erro ao reservar.', 'error');
+  fecharModalForce();
+  toast('Reserva realizada com sucesso!');
+  buscarDisponiveis();
+}
+
+// ═══════════════════════════════════════════════════
+// USUÁRIO COMUM — MINHAS RESERVAS
+// ═══════════════════════════════════════════════════
+async function renderMinhasReservas() {
+  const todas   = await fetch(`${API}/reservas`).then(r=>r.json());
+  const veiculos = await fetch(`${API}/veiculos`).then(r=>r.json());
+  const minhas  = todas.filter(r => r.id_usuario === usuario.id);
+
+  const veiculoMap = {};
+  veiculos.forEach(v => veiculoMap[v.id] = v);
+
+  const hoje = new Date().toISOString().split('T')[0];
+
+  document.getElementById('app-content').innerHTML = `
+    <div class="page-header"><h1 class="page-title">Minhas reservas</h1></div>
+    ${minhas.length === 0
+      ? `<div class="empty"><div class="empty-icon">📋</div>Você ainda não tem reservas.</div>`
+      : `<div style="display:flex;flex-direction:column;gap:12px">
+          ${minhas.map(r => {
+            const v = veiculoMap[r.id_veiculo];
+            const ativa = r.data_fim >= hoje;
+            return `
+              <div class="reserva-card">
+                <div style="display:flex;align-items:center;justify-content:space-between">
+                  <div>
+                    <div style="font-weight:600;font-size:15px">${v ? v.marca + ' ' + v.modelo : 'Veículo #' + r.id_veiculo}</div>
+                    ${v ? `<span class="veiculo-placa" style="margin-top:6px;display:inline-block">${v.placa}</span>` : ''}
+                  </div>
+                  <span class="badge ${ativa ? 'badge-success' : 'badge-warning'}">${ativa ? 'ativa' : 'encerrada'}</span>
+                </div>
+                <div class="reserva-datas">
+                  <span>📅 Início: <strong>${r.data_inicio}</strong></span>
+                  <span>📅 Fim: <strong>${r.data_fim}</strong></span>
+                </div>
+                ${ativa ? `<button class="btn btn-danger btn-sm" style="width:fit-content" data-action="cancelar-reserva" data-id="${r.id}">Cancelar reserva</button>` : ''}
+              </div>`;
+          }).join('')}
+        </div>`}`;
+}
+
+function cancelarReserva(id) {
+  abrirModal('Cancelar reserva', `<p style="font-size:14px;color:var(--muted)">Tem certeza que deseja cancelar a reserva <strong>#${id}</strong>?</p>`,
+    async () => {
+      const r = await fetch(`${API}/reservas/${id}`, { method:'DELETE' });
+      const d = await r.json();
+      if (!r.ok) return toast(d.detail || 'Erro.', 'error');
+      fecharModalForce();
+      toast('Reserva cancelada.');
+      renderMinhasReservas();
+    }, 'Cancelar reserva');
+  document.getElementById('modal-confirm').className = 'btn btn-danger';
+}
+
+// ─── EVENT DELEGATION ────────────────────────────────
+document.addEventListener('click', function(e) {
+  const btn = e.target.closest('[data-action]');
+  if (!btn) return;
+  e.preventDefault();
+  const action = btn.dataset.action;
+  const id = btn.dataset.id ? parseInt(btn.dataset.id) : null;
+
+  if (action === 'criar-usuario')     modalCriarUsuario();
+  if (action === 'editar-usuario')    modalEditarUsuario(id, btn.dataset.nome, btn.dataset.email, btn.dataset.tipo);
+  if (action === 'delete-usuario')    confirmarDeleteUsuario(id);
+
+  if (action === 'criar-veiculo')     modalCriarVeiculo();
+  if (action === 'editar-veiculo')    modalEditarVeiculo(id, btn.dataset.marca, btn.dataset.modelo, btn.dataset.placa, btn.dataset.status);
+  if (action === 'delete-veiculo')    confirmarDeleteVeiculo(id);
+
+  if (action === 'criar-reserva')     modalCriarReserva();
+  if (action === 'editar-reserva')    modalEditarReserva(id, btn.dataset.inicio, btn.dataset.fim);
+  if (action === 'delete-reserva')    confirmarDeleteReserva(id);
+
+  if (action === 'buscar-disponiveis') buscarDisponiveis();
+  if (action === 'reservar')          confirmarReserva(id, btn.dataset.nome);
+  if (action === 'cancelar-reserva')  cancelarReserva(id);
+});
+if (usuario) {
+  document.getElementById('screen-login').classList.add('hidden');
+  document.getElementById('screen-app').classList.remove('hidden');
+  iniciarApp();
+};
+</script>
+</body>
+</html>
