@@ -8,7 +8,8 @@ from models import Usuario, UsuarioPublico, CreateUsuario, UpdateUsuario, Veicul
 from security import gerar_hash, verificar_senha
 
 from fastapi.middleware.cors import CORSMiddleware
-
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 app = FastAPI()
 
@@ -299,7 +300,9 @@ def atualizar_reserva(id_reserva: int, dados: UpdateReserva, session: SessionDep
     
     return reserva
 
-
+@app.get("/")
+def servir_frontend():
+    return FileResponse("index.html")
 
 @app.delete("/reservas/{id_reserva}")
 def deletar_reserva(id_reserva: int, session: SessionDep):
