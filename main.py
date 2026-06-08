@@ -3,7 +3,11 @@ from fastapi import Depends, FastAPI, HTTPException, Query
 
 from sqlmodel import select, func
 from database import SessionDep, create_db_and_tables
-from models import Usuario, UsuarioPublico, CreateUsuario, UpdateUsuario, Veiculo, VeiculoPublico, CreateVeiculo, UpdateVeiculo, Reserva, ReservaPublica, ReservaDetalhada, CreateReserva, UpdateReserva
+from models import (
+    Usuario, UsuarioPublico, CreateUsuario, UpdateUsuario,
+    Veiculo, VeiculoPublico, CreateVeiculo, UpdateVeiculo,
+    Reserva, ReservaPublica, ReservaDetalhada, CreateReserva, UpdateReserva
+)
 
 from security import gerar_hash, verificar_senha
 
@@ -27,24 +31,18 @@ def on_startup():
     create_db_and_tables()
 
 
-#login
+# ─── LOGIN ────────────────────────────────────────────────
 
 @app.post("/login")
 def login(email: str, senha: str, session: SessionDep):
-    
+
     usuario = session.exec(select(Usuario).where(Usuario.email == email)).first()
 
     if not usuario:
-        raise HTTPException(
-            status_code=404,
-            detail="Usuário não encontrado."
-        )
+        raise HTTPException(status_code=404, detail="Usuário não encontrado.")
 
     if not verificar_senha(senha, usuario.senha):
-        raise HTTPException(
-            status_code=401,
-            detail="Senha incorreta."
-        )
+        raise HTTPException(status_code=401, detail="Senha incorreta.")
 
     return {
         "mensagem": "Login realizado com sucesso!",
@@ -53,7 +51,8 @@ def login(email: str, senha: str, session: SessionDep):
         "tipo_usuario": usuario.tipo_usuario
     }
 
-#rotas usuário
+
+# ─── USUÁRIOS ─────────────────────────────────────────────
 
 @app.post("/usuarios", response_model=UsuarioPublico)
 def criar_usuario(usuario: CreateUsuario, session: SessionDep):
@@ -72,6 +71,7 @@ def criar_usuario(usuario: CreateUsuario, session: SessionDep):
     session.refresh(db_usuario)
 
     return db_usuario
+
 
 @app.get("/usuarios", response_model=list[UsuarioPublico])
 def listar_usuarios(session: SessionDep):
@@ -111,6 +111,7 @@ def atualizar_usuario(id_usuario: int, dados: UpdateUsuario, session: SessionDep
 
     return usuario
 
+
 @app.delete("/usuarios/{id_usuario}")
 def deletar_usuario(id_usuario: int, session: SessionDep):
 
@@ -125,7 +126,7 @@ def deletar_usuario(id_usuario: int, session: SessionDep):
     return {"mensagem": "Usuário deletado com sucesso."}
 
 
-#rotas veículo
+# ─── VEÍCULOS ─────────────────────────────────────────────
 
 @app.post("/veiculos", response_model=VeiculoPublico)
 def cadastrar_veiculo(veiculo: CreateVeiculo, session: SessionDep):
@@ -145,10 +146,11 @@ def listar_veiculos(session: SessionDep):
 
 @app.get("/veiculos/disponiveis", response_model=list[VeiculoPublico])
 def veiculos_disponiveis(data_inicio: str, data_fim: str, session: SessionDep):
-    
-    # Busca veículos que NÃO têm conflito de reserva no período
+
+    # Busca apenas reservas ATIVAS (não canceladas) com conflito de datas
     reservados = session.exec(
         select(Reserva.id_veiculo).where(
+            Reserva.cancelada == False,          # ← ignora reservas canceladas
             Reserva.data_inicio < data_fim,
             Reserva.data_fim > data_inicio,
         )
@@ -165,11 +167,12 @@ def veiculos_disponiveis(data_inicio: str, data_fim: str, session: SessionDep):
 def buscar_veiculo(id_veiculo: int, session: SessionDep):
 
     veiculo = session.get(Veiculo, id_veiculo)
-    
+
     if not veiculo:
         raise HTTPException(status_code=404, detail="Veículo não encontrado.")
 
     return veiculo
+
 
 @app.patch("/veiculos/{id_veiculo}", response_model=VeiculoPublico)
 def atualizar_veiculo(id_veiculo: int, dados: UpdateVeiculo, session: SessionDep):
@@ -201,13 +204,9 @@ def deletar_veiculo(id_veiculo: int, session: SessionDep):
     return {"mensagem": "Veículo deletado com sucesso."}
 
 
-
-
-
-#rotas reservas
+# ─── RESERVAS ─────────────────────────────────────────────
 
 @app.post("/reservas", response_model=ReservaPublica)
-
 def criar_reserva(reserva: CreateReserva, session: SessionDep):
 
     if not session.get(Usuario, reserva.id_usuario):
@@ -216,11 +215,11 @@ def criar_reserva(reserva: CreateReserva, session: SessionDep):
     if not session.get(Veiculo, reserva.id_veiculo):
         raise HTTPException(status_code=404, detail="Veículo não encontrado.")
 
-    # Verifica conflito de datas
-
+    # Verifica conflito apenas com reservas ATIVAS (não canceladas)
     conflito = session.exec(
         select(Reserva).where(
             Reserva.id_veiculo == reserva.id_veiculo,
+            Reserva.cancelada == False,          # ← ignora reservas canceladas
             Reserva.data_inicio < reserva.data_fim,
             Reserva.data_fim > reserva.data_inicio,
         )
@@ -242,7 +241,6 @@ def listar_reservas(session: SessionDep):
     return session.exec(select(Reserva)).all()
 
 
-
 @app.get("/reservas/{id_reserva}", response_model=ReservaDetalhada)
 def buscar_reserva(id_reserva: int, session: SessionDep):
 
@@ -259,9 +257,9 @@ def buscar_reserva(id_reserva: int, session: SessionDep):
         data_inicio=reserva.data_inicio,
         data_fim=reserva.data_fim,
         nome_usuario=usuario.nome,
-        modelo_veiculo=veiculo.modelo
+        modelo_veiculo=veiculo.modelo,
+        cancelada=reserva.cancelada
     )
-
 
 
 @app.patch("/reservas/{id_reserva}", response_model=ReservaPublica)
@@ -272,37 +270,39 @@ def atualizar_reserva(id_reserva: int, dados: UpdateReserva, session: SessionDep
     if not reserva:
         raise HTTPException(status_code=404, detail="Reserva não encontrada.")
 
+    # Se estiver apenas cancelando, não precisa checar conflito de datas
+    if dados.cancelada is not None and dados.data_inicio is None and dados.data_fim is None:
+        reserva.cancelada = dados.cancelada
+        session.add(reserva)
+        session.commit()
+        session.refresh(reserva)
+        return reserva
+
     # Usa as novas datas se fornecidas, senão mantém as existentes
-
     nova_inicio = dados.data_inicio or reserva.data_inicio
-    nova_fim = dados.data_fim or reserva.data_fim
+    nova_fim    = dados.data_fim    or reserva.data_fim
 
-    # Verifica conflito de datas excluindo a própria reserva
-
+    # Verifica conflito de datas excluindo a própria reserva e canceladas
     conflito = session.exec(
         select(Reserva).where(
             Reserva.id_veiculo == reserva.id_veiculo,
             Reserva.id != id_reserva,
+            Reserva.cancelada == False,
             Reserva.data_inicio < nova_fim,
             Reserva.data_fim > nova_inicio,
         )
     ).first()
 
-
     if conflito:
         raise HTTPException(status_code=409, detail="Veículo já reservado nesse período.")
-
 
     reserva.sqlmodel_update(dados.model_dump(exclude_unset=True))
     session.add(reserva)
     session.commit()
     session.refresh(reserva)
-    
+
     return reserva
 
-@app.get("/")
-def servir_frontend():
-    return FileResponse("index.html")
 
 @app.delete("/reservas/{id_reserva}")
 def deletar_reserva(id_reserva: int, session: SessionDep):
@@ -316,3 +316,10 @@ def deletar_reserva(id_reserva: int, session: SessionDep):
     session.commit()
 
     return {"mensagem": "Reserva deletada com sucesso."}
+
+
+# ─── FRONTEND ─────────────────────────────────────────────
+
+@app.get("/")
+def servir_frontend():
+    return FileResponse("index.html")
