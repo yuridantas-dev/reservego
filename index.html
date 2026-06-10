@@ -239,20 +239,20 @@ tr:hover td { background: var(--surface2); transition: background .1s; }
 }
 
 .login-banner{
-  flex:1;
-  background-image: url('/static/banner-reservego.png');
-  background-size:cover;
-  background-position:center;
-  background-repeat:no-repeat;
+    flex:1;
+    background:url('/static/banner-reservego.png') center center no-repeat;
+    background-size:contain;
 }
 
 .login-side{
-  width:500px;
-  min-height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:40px;
+    width:420px;
+    min-width:420px;
+    background:rgba(5,10,20,.92);
+    backdrop-filter:blur(8px);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:30px;
 }
 
 .login-banner img{
