@@ -1186,15 +1186,46 @@ function updateAdminTotal() {
   }
 }
 async function criarReservaAdmin() {
-  const body={id_usuario:parseInt(document.getElementById('m-uid').value),id_veiculo:parseInt(document.getElementById('m-vid').value),data_inicio:document.getElementById('m-inicio').value,data_fim:document.getElementById('m-fim').value};
-  if(!body.id_usuario||!body.id_veiculo||!body.data_inicio||!body.data_fim) return toast('Preencha todos os campos.','error');
+
+  const body = {
+    id_usuario: Number(document.getElementById('m-uid').value),
+    id_veiculo: Number(document.getElementById('m-vid').value),
+    data_inicio: document.getElementById('m-inicio').value,
+    data_fim: document.getElementById('m-fim').value
+  };
+
+  if (!body.id_usuario || !body.id_veiculo || !body.data_inicio || !body.data_fim)
+    return toast('Preencha todos os campos.', 'error');
+
+  const hoje = new Date().toISOString().split('T')[0];
+
+  if (body.data_inicio < hoje)
+    return toast('Não é permitido reservar datas passadas.', 'error');
+
+  if (body.data_fim < body.data_inicio)
+    return toast('A data final deve ser maior ou igual à data inicial.', 'error');
+
   showSpinner();
+
   try {
-    const r=await fetch(`${API}/reservas`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-    const d=await r.json();
-    if(!r.ok) return toast(d.detail||'Erro.','error');
-    fecharModal(); toast('Reserva criada!'); renderReservasAdmin();
-  } finally { hideSpinner(); }
+    const r = await fetch(`${API}/reservas`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+
+    const d = await r.json();
+
+    if (!r.ok)
+      return toast(d.detail || 'Erro.', 'error');
+
+    fecharModal();
+    toast('Reserva criada!');
+    renderReservasAdmin();
+
+  } finally {
+    hideSpinner();
+  }
 }
 function modalEditarReserva(id,inicio,fim) {
   abrirModal('Editar reserva',`
