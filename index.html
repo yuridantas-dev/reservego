@@ -232,116 +232,57 @@ tr:hover td { background: var(--surface2); transition: background .1s; }
 .stat-sub   { font-size: 13px; color: var(--muted2); margin-top: 6px; }
 
 /* ─── LOGIN ─── */
-
 #screen-login{
-  min-height:100vh;
-  display:flex;
-}
-
-.login-banner{
-    flex:1;
+    min-height:100vh;
     background:url('/static/banner-reservego.png') center center no-repeat;
-    background-size:contain;
+    background-size:cover;
 }
 
-.login-side{
-    width:420px;
-    min-width:420px;
-    background:rgba(5,10,20,.92);
-    backdrop-filter:blur(8px);
+.login-overlay{
+    min-height:100vh;
+
     display:flex;
+    justify-content:flex-end;
     align-items:center;
-    justify-content:center;
-    padding:30px;
-}
 
-.login-banner img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-}
+    padding-right:80px;
 
-.login-banner::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  background:linear-gradient(
-      90deg,
-      rgba(0,0,0,.05),
-      rgba(0,0,0,.25)
-  );
+    background:linear-gradient(
+        90deg,
+        rgba(0,0,0,.15),
+        rgba(0,0,0,.45)
+    );
 }
 
 .login-box{
-  width:100%;
-  max-width:420px;
-  background:var(--surface);
-  border:1px solid var(--border2);
-  border-radius:18px;
-  padding:40px 36px;
-  box-shadow:0 24px 64px #00000060;
+    width:420px;
+    max-width:90vw;
+
+    background:rgba(8,12,24,.92);
+
+    backdrop-filter:blur(12px);
+
+    border:1px solid rgba(255,255,255,.08);
+
+    border-radius:20px;
+
+    padding:32px;
+
+    box-shadow:0 20px 60px rgba(0,0,0,.45);
 }
 
-.login-logo{
-  font-family:'Syne',sans-serif;
-  font-size:30px;
-  font-weight:800;
-  color:var(--accent);
-  margin-bottom:8px;
-}
+@media (max-width: 900px){
 
-.login-sub{
-  font-size:14px;
-  color:var(--muted);
-  margin-bottom:30px;
-}
+    .login-overlay{
+        justify-content:center;
+        padding:20px;
+    }
 
-.login-form{
-  display:flex;
-  flex-direction:column;
-  gap:14px;
-}
+    .login-box{
+        width:100%;
+        max-width:420px;
+    }
 
-.login-tabs{
-  display:flex;
-  border:1px solid var(--border2);
-  border-radius:var(--radius-sm);
-  overflow:hidden;
-  margin-bottom:24px;
-}
-
-.login-tab{
-  flex:1;
-  padding:12px;
-  border:none;
-  cursor:pointer;
-  background:transparent;
-  color:var(--muted);
-  transition:.2s;
-}
-
-.login-tab.active{
-  background:var(--accent);
-  color:#fff;
-}
-
-@media(max-width:992px){
-
-  #screen-login{
-    flex-direction:column;
-  }
-
-  .login-banner{
-    display:none;
-    background-image: url('./banner-reservego.png');
-    background-size:cover;
-    background-position:center;
-    background-repeat:no-repeat;
-  }
-
-  .login-side{
-    width:100%;
-  }
 }
 /* ─── APP SHELL ─── */
 #screen-app { min-height: 100vh; display: flex; flex-direction: column; }
@@ -521,11 +462,7 @@ tr:hover td { background: var(--surface2); transition: background .1s; }
 <!-- ══════════════════ LOGIN ══════════════════ -->
 <div id="screen-login">
 
-  <!-- Banner lateral -->
-  <div class="login-banner"></div>
-
-  <!-- Área do formulário -->
-  <div class="login-side">
+  <div class="login-overlay">
 
     <div class="login-box">
 
@@ -590,12 +527,17 @@ tr:hover td { background: var(--surface2); transition: background .1s; }
           <label>Senha</label>
 
           <div class="pwd-wrap">
-            <input id="cad-senha" type="password" placeholder="Crie uma senha forte"
-              autocomplete="new-password"
-              oninput="checkPwdStrength(this.value)"/>
+            <input id="cad-senha"
+                   type="password"
+                   placeholder="Crie uma senha forte"
+                   autocomplete="new-password"
+                   oninput="checkPwdStrength(this.value)"/>
 
-            <button type="button" class="pwd-toggle"
-              onclick="togglePwd('cad-senha',this)">👁</button>
+            <button type="button"
+                    class="pwd-toggle"
+                    onclick="togglePwd('cad-senha',this)">
+              👁
+            </button>
           </div>
 
           <div class="pwd-strength" id="pwd-strength-box">
@@ -640,8 +582,8 @@ tr:hover td { background: var(--surface2); transition: background .1s; }
         </div>
 
         <button class="btn btn-primary btn-full"
-          onclick="fazerCadastro()"
-          id="btn-cadastro">
+                onclick="fazerCadastro()"
+                id="btn-cadastro">
           Criar conta
         </button>
 
