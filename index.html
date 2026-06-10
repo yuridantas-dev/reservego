@@ -1103,20 +1103,63 @@ async function renderReservasAdmin() {
       </div>`;
   } finally { hideSpinner(); }
 }
-function modalCriarReserva() {
-  abrirModal('Nova reserva',`
+async function modalCriarReserva() {
+
+  const usuarios = await fetch(`${API}/usuarios`)
+    .then(r => r.json());
+
+  const veiculos = await fetch(`${API}/veiculos`)
+    .then(r => r.json());
+
+  abrirModal('Nova reserva', `
     <div class="grid-2">
-      <div class="field"><label>ID do Usuário</label><input id="m-uid" type="number" min="1"/></div>
-      <div class="field"><label>ID do Veículo</label><input id="m-vid" type="number" min="1"/></div>
+
+      <div class="field">
+        <label>Usuário</label>
+        <select id="m-uid">
+          ${usuarios.map(u =>
+            `<option value="${u.id}">${u.nome}</option>`
+          ).join('')}
+        </select>
+      </div>
+
+      <div class="field">
+        <label>Veículo</label>
+        <select id="m-vid" onchange="updateAdminTotal()">
+          ${veiculos.map(v =>
+            `<option value="${v.id}">
+              ${v.marca} ${v.modelo} - ${v.placa}
+            </option>`
+          ).join('')}
+        </select>
+      </div>
+
     </div>
+
     <div class="grid-2">
-      <div class="field"><label>Data início</label><input id="m-inicio" type="date" oninput="updateAdminTotal()"/></div>
-      <div class="field"><label>Data fim</label><input id="m-fim" type="date" oninput="updateAdminTotal()"/></div>
+      <div class="field">
+        <label>Data início</label>
+        <input id="m-inicio" type="date" oninput="updateAdminTotal()"/>
+      </div>
+
+      <div class="field">
+        <label>Data fim</label>
+        <input id="m-fim" type="date" oninput="updateAdminTotal()"/>
+      </div>
     </div>
+
     <div id="m-total-box" style="display:none" class="summary-box">
-      <div class="summary-row"><span class="label">Dias</span><span id="m-dias">—</span></div>
-      <div class="summary-row total"><span class="label">Total estimado</span><span class="val" id="m-total-val">—</span></div>
-    </div>`, criarReservaAdmin);
+      <div class="summary-row">
+        <span class="label">Dias</span>
+        <span id="m-dias">—</span>
+      </div>
+
+      <div class="summary-row total">
+        <span class="label">Total estimado</span>
+        <span class="val" id="m-total-val">—</span>
+      </div>
+    </div>
+  `, criarReservaAdmin);
 }
 function updateAdminTotal() {
   const ini=document.getElementById('m-inicio')?.value, fim=document.getElementById('m-fim')?.value;
