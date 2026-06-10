@@ -234,8 +234,19 @@ tr:hover td { background: var(--surface2); transition: background .1s; }
 /* ─── LOGIN ─── */
 #screen-login{
     min-height:100vh;
-    background:url('/static/banner-reservego.png') center center no-repeat;
+
+    background:
+      linear-gradient(
+        90deg,
+        rgba(0,0,0,0.05) 0%,
+        rgba(0,0,0,0.20) 55%,
+        rgba(0,0,0,0.75) 100%
+      ),
+      url('/static/banner-reservego.png');
+
     background-size:cover;
+    background-position:left center;
+    background-repeat:no-repeat;
 }
 
 .login-overlay{
@@ -245,30 +256,53 @@ tr:hover td { background: var(--surface2); transition: background .1s; }
     justify-content:flex-end;
     align-items:center;
 
-    padding-right:80px;
+    padding-right:60px;
 
-    background:linear-gradient(
-        90deg,
-        rgba(0,0,0,.15),
-        rgba(0,0,0,.45)
-    );
+    width:100%;
 }
 
 .login-box{
-    width:420px;
-    max-width:90vw;
+    width:460px;
+    max-width:460px;
 
-    background:rgba(8,12,24,.92);
-
-    backdrop-filter:blur(12px);
+    background:rgba(8,12,24,.95);
 
     border:1px solid rgba(255,255,255,.08);
 
-    border-radius:20px;
+    border-radius:24px;
 
-    padding:32px;
+    padding:40px;
 
-    box-shadow:0 20px 60px rgba(0,0,0,.45);
+    backdrop-filter:blur(12px);
+
+    box-shadow:
+      0 20px 60px rgba(0,0,0,.50);
+}
+
+.login-tabs{
+    display:flex;
+    width:100%;
+    margin-bottom:24px;
+    border-radius:12px;
+    overflow:hidden;
+    border:1px solid rgba(255,255,255,.08);
+}
+
+.login-tab{
+    flex:1;
+    padding:14px;
+    cursor:pointer;
+    border:none;
+
+    background:transparent;
+    color:#9aa7c7;
+
+    transition:.2s;
+}
+
+.login-tab.active{
+    background:#4f83e3;
+    color:white;
 }
 
 @media (max-width: 900px){
@@ -277,12 +311,6 @@ tr:hover td { background: var(--surface2); transition: background .1s; }
         justify-content:center;
         padding:20px;
     }
-
-    .login-box{
-        width:100%;
-        max-width:420px;
-    }
-
 }
 /* ─── APP SHELL ─── */
 #screen-app { min-height: 100vh; display: flex; flex-direction: column; }
