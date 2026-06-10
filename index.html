@@ -480,6 +480,71 @@ tr:hover td { background: var(--surface2); transition: background .1s; }
   .veiculo-grid { grid-template-columns: 1fr; }
   .topbar-user span { display: none; }
 }
+
+.account-menu{
+    position:relative;
+    margin-bottom:24px;
+}
+
+.account-btn{
+    width:100%;
+
+    padding:14px;
+
+    border:none;
+
+    border-radius:12px;
+
+    background:#4f83e3;
+
+    color:#fff;
+
+    font-size:15px;
+
+    cursor:pointer;
+}
+
+.account-dropdown{
+    position:absolute;
+
+    top:110%;
+    left:0;
+    right:0;
+
+    background:#101827;
+
+    border:1px solid rgba(255,255,255,.08);
+
+    border-radius:12px;
+
+    overflow:hidden;
+
+    z-index:999;
+}
+
+.account-dropdown button{
+    width:100%;
+
+    padding:14px;
+
+    border:none;
+
+    background:none;
+
+    color:white;
+
+    text-align:left;
+
+    cursor:pointer;
+}
+
+.account-dropdown button:hover{
+    background:#1b2740;
+}
+
+.hidden{
+    display:none;
+}
 </style>
 </head>
 <body>
@@ -497,10 +562,22 @@ tr:hover td { background: var(--surface2); transition: background .1s; }
       <div class="login-logo">ReserveGo</div>
       <p class="login-sub">Sistema de reserva veicular</p>
 
-      <div class="login-tabs">
-        <button class="login-tab active" onclick="switchLoginTab('login')">Entrar</button>
-        <button class="login-tab" onclick="switchLoginTab('cadastro')">Cadastrar</button>
+    <div class="account-menu">
+
+      <button class="account-btn" onclick="toggleMenu()">
+          Acessar ▼
+      </button>
+
+      <div class="account-dropdown hidden" id="account-dropdown">
+          <button onclick="switchLoginTab('login');fecharMenu();">
+              Entrar
+          </button>
+
+          <button onclick="switchLoginTab('cadastro');fecharMenu();">
+              Comece Agora
+          </button>
       </div>
+    </div>
 
       <!-- LOGIN -->
       <div id="tab-login" class="login-form">
@@ -640,6 +717,18 @@ tr:hover td { background: var(--surface2); transition: background .1s; }
 
 <script>
 // ─── CONFIG ───────────────────────────────────
+function toggleMenu(){
+    document
+      .getElementById("account-dropdown")
+      .classList.toggle("hidden");
+}
+
+function fecharMenu(){
+    document
+      .getElementById("account-dropdown")
+      .classList.add("hidden");
+}
+
 const API = '';
 // CAR PHOTOS from Unsplash (free, no auth needed)
 const CAR_PHOTOS = {
