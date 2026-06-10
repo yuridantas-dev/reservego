@@ -1111,6 +1111,8 @@ async function modalCriarReserva() {
   const veiculos = await fetch(`${API}/veiculos`)
     .then(r => r.json());
 
+  const hoje = new Date().toISOString().split('T')[0];
+
   abrirModal('Nova reserva', `
     <div class="grid-2">
 
@@ -1139,12 +1141,22 @@ async function modalCriarReserva() {
     <div class="grid-2">
       <div class="field">
         <label>Data início</label>
-        <input id="m-inicio" type="date" oninput="updateAdminTotal()"/>
+        <input
+          id="m-inicio"
+          type="date"
+          min="${hoje}"
+          oninput="updateAdminTotal()"
+        />
       </div>
 
       <div class="field">
         <label>Data fim</label>
-        <input id="m-fim" type="date" oninput="updateAdminTotal()"/>
+        <input
+          id="m-fim"
+          type="date"
+          min="${hoje}"
+          oninput="updateAdminTotal()"
+        />
       </div>
     </div>
 
@@ -1161,6 +1173,7 @@ async function modalCriarReserva() {
     </div>
   `, criarReservaAdmin);
 }
+
 function updateAdminTotal() {
   const ini=document.getElementById('m-inicio')?.value, fim=document.getElementById('m-fim')?.value;
   if(!ini||!fim) return;
