@@ -236,7 +236,6 @@ tr:hover td { background: var(--surface2); transition: background .1s; }
 #screen-login{
   min-height:100vh;
   display:flex;
-  background:#050b18;
 }
 
 .login-banner{
@@ -245,6 +244,15 @@ tr:hover td { background: var(--surface2); transition: background .1s; }
   background-size:cover;
   background-position:center;
   background-repeat:no-repeat;
+}
+
+.login-side{
+  width:500px;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:40px;
 }
 
 .login-banner img{
@@ -262,16 +270,6 @@ tr:hover td { background: var(--surface2); transition: background .1s; }
       rgba(0,0,0,.05),
       rgba(0,0,0,.25)
   );
-}
-
-.login-side{
-  width:480px;
-  min-height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:40px;
-  background:var(--bg);
 }
 
 .login-box{
@@ -522,83 +520,138 @@ tr:hover td { background: var(--surface2); transition: background .1s; }
 
 <!-- ══════════════════ LOGIN ══════════════════ -->
 <div id="screen-login">
-  <div class="login-box">
-    <div class="login-logo">ReserveGo</div>
-    <p class="login-sub">Sistema de reserva veicular</p>
 
-    <div class="login-tabs">
-      <button class="login-tab active" onclick="switchLoginTab('login')">Entrar</button>
-      <button class="login-tab" onclick="switchLoginTab('cadastro')">Cadastrar</button>
-    </div>
+  <!-- Banner lateral -->
+  <div class="login-banner"></div>
 
-    <!-- LOGIN -->
-    <div id="tab-login" class="login-form">
-      <div class="field">
-        <label>E-mail</label>
-        <input id="login-email" type="email" placeholder="seu@email.com" autocomplete="email"/>
-      </div>
-      <div class="field">
-        <label>Senha</label>
-        <div class="pwd-wrap">
-          <input id="login-senha" type="password" placeholder="••••••••" autocomplete="current-password"/>
-          <button type="button" class="pwd-toggle" onclick="togglePwd('login-senha',this)">👁</button>
-        </div>
-      </div>
-      <button class="btn btn-primary btn-full" onclick="fazerLogin()" id="btn-login">Entrar</button>
-    </div>
+  <!-- Área do formulário -->
+  <div class="login-side">
 
-    <!-- CADASTRO -->
-    <div id="tab-cadastro" class="login-form hidden">
-      <div class="field">
-        <label>Nome completo</label>
-        <input id="cad-nome" type="text" placeholder="João Silva" autocomplete="name"/>
+    <div class="login-box">
+
+      <div class="login-logo">ReserveGo</div>
+      <p class="login-sub">Sistema de reserva veicular</p>
+
+      <div class="login-tabs">
+        <button class="login-tab active" onclick="switchLoginTab('login')">Entrar</button>
+        <button class="login-tab" onclick="switchLoginTab('cadastro')">Cadastrar</button>
       </div>
-      <div class="grid-2">
+
+      <!-- LOGIN -->
+      <div id="tab-login" class="login-form">
         <div class="field">
-          <label>CPF</label>
-          <input id="cad-cpf" type="text" placeholder="000.000.000-00" maxlength="14" oninput="maskCPF(this)"/>
-          <span class="field-hint">Apenas números (11 dígitos)</span>
-          <span class="field-error hidden" id="cpf-error">CPF inválido</span>
+          <label>E-mail</label>
+          <input id="login-email" type="email" placeholder="seu@email.com" autocomplete="email"/>
         </div>
+
         <div class="field">
-          <label>CNH</label>
-          <input id="cad-cnh" type="text" placeholder="00000000000" maxlength="11" oninput="maskCNH(this)"/>
-          <span class="field-hint">11 dígitos</span>
-          <span class="field-error hidden" id="cnh-error">CNH inválida</span>
-        </div>
-      </div>
-      <div class="field">
-        <label>E-mail</label>
-        <input id="cad-email" type="email" placeholder="seu@email.com" autocomplete="email"/>
-      </div>
-      <div class="field">
-        <label>Senha</label>
-        <div class="pwd-wrap">
-          <input id="cad-senha" type="password" placeholder="Crie uma senha forte" autocomplete="new-password" oninput="checkPwdStrength(this.value)"/>
-          <button type="button" class="pwd-toggle" onclick="togglePwd('cad-senha',this)">👁</button>
-        </div>
-        <div class="pwd-strength" id="pwd-strength-box">
-          <div class="pwd-strength-bar">
-            <div class="pwd-strength-seg" id="ps1"></div>
-            <div class="pwd-strength-seg" id="ps2"></div>
-            <div class="pwd-strength-seg" id="ps3"></div>
-            <div class="pwd-strength-seg" id="ps4"></div>
-          </div>
-          <div class="pwd-strength-label" id="pwd-strength-label">Digite uma senha</div>
-          <div class="pwd-reqs">
-            <div class="pwd-req" id="req-len"><div class="pwd-req-dot"></div> Mínimo 8 caracteres</div>
-            <div class="pwd-req" id="req-upper"><div class="pwd-req-dot"></div> Letra maiúscula</div>
-            <div class="pwd-req" id="req-lower"><div class="pwd-req-dot"></div> Letra minúscula</div>
-            <div class="pwd-req" id="req-num"><div class="pwd-req-dot"></div> Número</div>
-            <div class="pwd-req" id="req-special"><div class="pwd-req-dot"></div> Caractere especial (!@#$...)</div>
+          <label>Senha</label>
+          <div class="pwd-wrap">
+            <input id="login-senha" type="password" placeholder="••••••••" autocomplete="current-password"/>
+            <button type="button" class="pwd-toggle" onclick="togglePwd('login-senha',this)">👁</button>
           </div>
         </div>
+
+        <button class="btn btn-primary btn-full" onclick="fazerLogin()" id="btn-login">
+          Entrar
+        </button>
       </div>
-      <button class="btn btn-primary btn-full" onclick="fazerCadastro()" id="btn-cadastro">Criar conta</button>
+
+      <!-- CADASTRO -->
+      <div id="tab-cadastro" class="login-form hidden">
+
+        <div class="field">
+          <label>Nome completo</label>
+          <input id="cad-nome" type="text" placeholder="João Silva" autocomplete="name"/>
+        </div>
+
+        <div class="grid-2">
+          <div class="field">
+            <label>CPF</label>
+            <input id="cad-cpf" type="text" placeholder="000.000.000-00" maxlength="14" oninput="maskCPF(this)"/>
+            <span class="field-hint">Apenas números (11 dígitos)</span>
+            <span class="field-error hidden" id="cpf-error">CPF inválido</span>
+          </div>
+
+          <div class="field">
+            <label>CNH</label>
+            <input id="cad-cnh" type="text" placeholder="00000000000" maxlength="11" oninput="maskCNH(this)"/>
+            <span class="field-hint">11 dígitos</span>
+            <span class="field-error hidden" id="cnh-error">CNH inválida</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>E-mail</label>
+          <input id="cad-email" type="email" placeholder="seu@email.com" autocomplete="email"/>
+        </div>
+
+        <div class="field">
+          <label>Senha</label>
+
+          <div class="pwd-wrap">
+            <input id="cad-senha" type="password" placeholder="Crie uma senha forte"
+              autocomplete="new-password"
+              oninput="checkPwdStrength(this.value)"/>
+
+            <button type="button" class="pwd-toggle"
+              onclick="togglePwd('cad-senha',this)">👁</button>
+          </div>
+
+          <div class="pwd-strength" id="pwd-strength-box">
+            <div class="pwd-strength-bar">
+              <div class="pwd-strength-seg" id="ps1"></div>
+              <div class="pwd-strength-seg" id="ps2"></div>
+              <div class="pwd-strength-seg" id="ps3"></div>
+              <div class="pwd-strength-seg" id="ps4"></div>
+            </div>
+
+            <div class="pwd-strength-label" id="pwd-strength-label">
+              Digite uma senha
+            </div>
+
+            <div class="pwd-reqs">
+              <div class="pwd-req" id="req-len">
+                <div class="pwd-req-dot"></div>
+                Mínimo 8 caracteres
+              </div>
+
+              <div class="pwd-req" id="req-upper">
+                <div class="pwd-req-dot"></div>
+                Letra maiúscula
+              </div>
+
+              <div class="pwd-req" id="req-lower">
+                <div class="pwd-req-dot"></div>
+                Letra minúscula
+              </div>
+
+              <div class="pwd-req" id="req-num">
+                <div class="pwd-req-dot"></div>
+                Número
+              </div>
+
+              <div class="pwd-req" id="req-special">
+                <div class="pwd-req-dot"></div>
+                Caractere especial (!@#$...)
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary btn-full"
+          onclick="fazerCadastro()"
+          id="btn-cadastro">
+          Criar conta
+        </button>
+
+      </div>
+
     </div>
+
   </div>
-</div>
 
+</div>
 <!-- ══════════════════ APP ══════════════════ -->
 <div id="screen-app" class="hidden">
 
