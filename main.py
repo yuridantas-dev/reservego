@@ -15,6 +15,28 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 
+import re
+from datetime import date
+
+def validar_senha_forte(senha: str):
+
+    if len(senha) < 8:
+        return False
+
+    if not re.search(r"[A-Z]", senha):
+        return False
+
+    if not re.search(r"[a-z]", senha):
+        return False
+
+    if not re.search(r"\d", senha):
+        return False
+
+    if not re.search(r"[!@#$%^&*(),.?\":{}|<>]", senha):
+        return False
+
+    return True
+
 app = FastAPI()
 
 app.add_middleware(
@@ -57,6 +79,26 @@ def login(email: str, senha: str, session: SessionDep):
 @app.post("/usuarios", response_model=UsuarioPublico)
 def criar_usuario(usuario: CreateUsuario, session: SessionDep):
 
+    usuario_existente = session.exec(
+        select(Usuario).where(
+            (Usuario.email == usuario.email) |
+            (Usuario.cpf == usuario.cpf) |
+            (Usuario.cnh == usuario.cnh)
+        )
+    ).first()
+
+    if usuario_existente:
+        raise HTTPException(
+            status_code=400,
+            detail="Já existe um usuário com este e-mail, CPF ou CNH."
+        )
+
+    if not validar_senha_forte(usuario.senha):
+        raise HTTPException(
+            status_code=400,
+            detail="Senha fraca. Use no mínimo 8 caracteres, letra maiúscula, minúscula, número e símbolo."
+        )
+
     db_usuario = Usuario(
         nome=usuario.nome,
         cpf=usuario.cpf,
@@ -71,7 +113,6 @@ def criar_usuario(usuario: CreateUsuario, session: SessionDep):
     session.refresh(db_usuario)
 
     return db_usuario
-
 
 @app.get("/usuarios", response_model=list[UsuarioPublico])
 def listar_usuarios(session: SessionDep):
@@ -99,9 +140,31 @@ def atualizar_usuario(id_usuario: int, dados: UpdateUsuario, session: SessionDep
         raise HTTPException(status_code=404, detail="Usuário não encontrado.")
 
     dados_update = dados.model_dump(exclude_unset=True)
+    if "email" in dados_update:
+        email_existente = session.exec(
+            select(Usuario).where(
+                Usuario.email == dados_update["email"],
+                Usuario.id != id_usuario
+            )
+        ).first()
+
+    if email_existente:
+        raise HTTPException(
+            status_code=400,
+            detail="E-mail já cadastrado."
+        )
 
     if "senha" in dados_update:
-        dados_update["senha"] = gerar_hash(dados_update["senha"])
+
+        if not validar_senha_forte(dados_update["senha"]):
+            raise HTTPException(
+                status_code=400,
+                detail="Senha fraca."
+            )
+
+        dados_update["senha"] = gerar_hash(
+            dados_update["senha"]
+        )
 
     usuario.sqlmodel_update(dados_update)
 
@@ -131,7 +194,20 @@ def deletar_usuario(id_usuario: int, session: SessionDep):
 @app.post("/veiculos", response_model=VeiculoPublico)
 def cadastrar_veiculo(veiculo: CreateVeiculo, session: SessionDep):
 
+    placa_existente = session.exec(
+        select(Veiculo).where(
+            Veiculo.placa == veiculo.placa
+        )
+    ).first()
+
+    if placa_existente:
+        raise HTTPException(
+            status_code=400,
+            detail="Já existe um veículo com esta placa."
+        )
+
     db_veiculo = Veiculo.model_validate(veiculo)
+
     session.add(db_veiculo)
     session.commit()
     session.refresh(db_veiculo)
@@ -180,7 +256,16 @@ def atualizar_veiculo(id_veiculo: int, dados: UpdateVeiculo, session: SessionDep
     veiculo = session.get(Veiculo, id_veiculo)
 
     if not veiculo:
-        raise HTTPException(status_code=404, detail="Veículo não encontrado.")
+        if dados.placa:
+            placa_existente = session.exec(
+                select(Veiculo).where(
+                    Veiculo.placa == dados.placa,
+                    Veiculo.id != id_veiculo
+                )
+            ).first()
+
+            if placa_existente:
+                raise HTTPException(status_code=400,detail="Placa já cadastrada.")
 
     veiculo.sqlmodel_update(dados.model_dump(exclude_unset=True))
     session.add(veiculo)
@@ -193,10 +278,26 @@ def atualizar_veiculo(id_veiculo: int, dados: UpdateVeiculo, session: SessionDep
 @app.delete("/veiculos/{id_veiculo}")
 def deletar_veiculo(id_veiculo: int, session: SessionDep):
 
+    reserva_ativa = session.exec(
+        select(Reserva).where(
+            Reserva.id_veiculo == id_veiculo,
+            Reserva.cancelada == False
+        )
+    ).first()
+
+    if reserva_ativa:
+        raise HTTPException(
+            status_code=400,
+            detail="Não é possível excluir um veículo que possui reservas."
+        )
+
     veiculo = session.get(Veiculo, id_veiculo)
 
     if not veiculo:
-        raise HTTPException(status_code=404, detail="Veículo não encontrado.")
+        raise HTTPException(
+            status_code=404,
+            detail="Veículo não encontrado."
+        )
 
     session.delete(veiculo)
     session.commit()
@@ -213,7 +314,15 @@ def criar_reserva(reserva: CreateReserva, session: SessionDep):
         raise HTTPException(status_code=404, detail="Usuário não encontrado.")
 
     if not session.get(Veiculo, reserva.id_veiculo):
-        raise HTTPException(status_code=404, detail="Veículo não encontrado.")
+        hoje = date.today()
+
+        if reserva.data_inicio < hoje:
+            raise HTTPException(status_code=400,detail="Não é permitido reservar datas passadas."
+        )
+
+        if reserva.data_fim < reserva.data_inicio:
+            raise HTTPException(status_code=400,detail="Data final deve ser maior que a inicial."
+        )
 
     # Verifica conflito apenas com reservas ATIVAS (não canceladas)
     conflito = session.exec(
@@ -226,7 +335,7 @@ def criar_reserva(reserva: CreateReserva, session: SessionDep):
     ).first()
 
     if conflito:
-        raise HTTPException(status_code=409, detail="Veículo já reservado nesse período.")
+        raise HTTPException(status_code=409, detail="Este veículo já possui uma reserva ativa para as datas selecionadas.")
 
     db_reserva = Reserva.model_validate(reserva)
     session.add(db_reserva)
@@ -281,6 +390,18 @@ def atualizar_reserva(id_reserva: int, dados: UpdateReserva, session: SessionDep
     # Usa as novas datas se fornecidas, senão mantém as existentes
     nova_inicio = dados.data_inicio or reserva.data_inicio
     nova_fim    = dados.data_fim    or reserva.data_fim
+    
+    hoje = date.today()
+
+    if nova_inicio < hoje:
+        raise HTTPException(status_code=400,
+        detail="Não é permitido alterar para datas passadas."
+    )
+
+    if nova_fim < nova_inicio:
+        raise HTTPException(status_code=400,
+        detail="Data final deve ser maior que a inicial."
+    )
 
     # Verifica conflito de datas excluindo a própria reserva e canceladas
     conflito = session.exec(
