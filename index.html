@@ -588,6 +588,8 @@ tr:hover td { background: var(--surface2); transition: background .1s; }
   .auth-panel { width: 100vw; }
 }
 
+
+
 /* ─── APP SHELL ─── */
 
 #screen-app { min-height: 100vh; display: flex; flex-direction: column; }
@@ -1000,22 +1002,31 @@ tr:hover td { background: var(--surface2); transition: background .1s; }
 
 }
 
+/* BANNER DESKTOP */
 .banner-bg{
   position: absolute;
   inset: 0;
   background-image: url('/static/banner-reservego.png');
   background-size: cover;
-  background-position: center;
+  background-position: center center;
   background-repeat: no-repeat;
   z-index: 0;
 }
 
-/* Versão Mobile */
-@media (max-width: 768px){
+/* BANNER MOBILE */
+@media screen and (max-width: 768px){
+
   .banner-bg{
-    background-image: url('static/banner-reservego-mobile.png');
+    background-image: url('/static/banner-reservego-mobile.png') !important;
+    background-size: cover;
     background-position: center top;
+    background-repeat: no-repeat;
   }
+
+  .landing-nav{
+    padding: 0 16px;
+  }
+
 }
 
 </style>
@@ -1044,33 +1055,34 @@ tr:hover td { background: var(--surface2); transition: background .1s; }
 <div id="modal-container"></div>
 
 
-
 <!-- ══════════════════ LOGIN ══════════════════ -->
+ <div id="screen-login" style="min-height:100vh; position:relative; overflow:hidden;">
 
-<div id="screen-login" style="min-height:100vh;">
+    <div class="banner-bg"></div>
 
-  <img
-  src="static/banner-reservego.png"
-  alt="Banner ReserveGo"
-  style="
-    position:absolute;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-    object-fit:cover;
-    z-index:0;
-  "
-/>
+    <div style="
+      position:absolute;
+      inset:0;
+      background:linear-gradient(
+        90deg,
+        rgba(0,0,0,0.1) 0%,
+        rgba(0,0,0,0.6) 100%
+      );
+      z-index:1;
+    "></div>
 
-  <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,0,0,0.1) 0%,rgba(0,0,0,0.6) 100%);z-index:1;"></div>
+    <nav class="landing-nav">
+        ...
+    </nav>
+
+    <!-- restante do conteúdo -->
 
 </div>
 
 <!-- Backdrop -->
 <div class="auth-backdrop" id="auth-backdrop" onclick="fecharPainel()"></div>
 
-<!-- Painel lateral deslizante -->
+<!-- Painel lateral -->
 <div class="auth-panel" id="auth-panel">
 
   <button class="auth-panel-close" onclick="fecharPainel()">✕</button>
@@ -1084,6 +1096,10 @@ tr:hover td { background: var(--surface2); transition: background .1s; }
       <button class="login-tab active" onclick="switchLoginTab('login')">Entrar</button>
       <button class="login-tab" onclick="switchLoginTab('cadastro')">Cadastrar</button>
     </div>
+
+  </div>
+
+</div>
 
     <!-- LOGIN -->
 
