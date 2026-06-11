@@ -164,6 +164,31 @@ h1, h2, h3, .logo { font-family: 'Syne', sans-serif; }
 
 @keyframes spin { to { transform: rotate(360deg); } }
 
+@keyframes kenBurns {
+  from { transform: scale(1); }
+  to   { transform: scale(1.07); }
+}
+
+@keyframes navReveal {
+  from { opacity: 0; transform: translateY(-110%); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes tabEnter {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes panelGlow {
+  0%, 100% { box-shadow: -20px 0 60px rgba(0,0,0,0.5); }
+  50%      { box-shadow: -24px 0 70px rgba(79,142,247,0.12), -20px 0 60px rgba(0,0,0,0.5); }
+}
+
 
 
 /* ─── BUTTONS ─── */
@@ -472,7 +497,7 @@ tr:hover td { background: var(--surface2); transition: background .1s; }
   overflow: hidden;
 }
 
-/* Painel lateral deslizante */
+/* Painel lateral */
 .auth-panel {
   position: fixed;
   top: 0; right: 0;
@@ -488,13 +513,26 @@ tr:hover td { background: var(--surface2); transition: background .1s; }
   flex-direction: column;
   padding: 0;
   overflow-y: auto;
-  transform: translateX(100%);
-  transition: transform .35s cubic-bezier(.4,0,.2,1);
+  transform: translateX(105%) scale(0.96);
+  opacity: 0;
+  filter: blur(6px);
+  transition:
+    transform 0.5s cubic-bezier(0.32, 0.72, 0, 1),
+    opacity 0.4s ease,
+    filter 0.45s ease;
 }
 
 .auth-panel.open {
-  transform: translateX(0);
+  transform: translateX(0) scale(1);
+  opacity: 1;
+  filter: blur(0);
+  animation: panelGlow 4s ease-in-out 0.5s infinite;
 }
+
+.auth-panel.open .login-logo   { animation: fadeUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.1s backwards; }
+.auth-panel.open .login-sub    { animation: fadeUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.18s backwards; }
+.auth-panel.open .login-tabs   { animation: fadeUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.26s backwards; }
+.auth-panel.open .login-form:not(.hidden) { animation: fadeUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) 0.34s backwards; }
 
 .auth-panel-inner {
   padding: 40px 40px 40px;
@@ -531,13 +569,17 @@ tr:hover td { background: var(--surface2); transition: background .1s; }
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0);
+  backdrop-filter: blur(0);
+  -webkit-backdrop-filter: blur(0);
   z-index: 350;
   pointer-events: none;
-  transition: background .35s ease;
+  transition: background 0.45s ease, backdrop-filter 0.45s ease;
 }
 
 .auth-backdrop.open {
-  background: rgba(0,0,0,0.45);
+  background: rgba(0,0,0,0.52);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   pointer-events: all;
 }
 
@@ -580,6 +622,10 @@ tr:hover td { background: var(--surface2); transition: background .1s; }
 .login-tab.active {
   background: #4f83e3;
   color: white;
+}
+
+.login-form:not(.hidden) {
+  animation: tabEnter 0.4s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 
@@ -941,6 +987,7 @@ tr:hover td { background: var(--surface2); transition: background .1s; }
   background: rgba(8, 11, 18, 0.72);
   backdrop-filter: blur(14px);
   border-bottom: 1px solid rgba(255,255,255,0.06);
+  animation: navReveal 0.75s cubic-bezier(0.22, 1, 0.36, 1) backwards;
 }
 
 .landing-nav-logo {
@@ -990,56 +1037,13 @@ tr:hover td { background: var(--surface2); transition: background .1s; }
 
 .nav-btn-primary:hover {
   background: var(--accent2);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 16px #4f8ef740;
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 6px 22px #4f8ef750;
 }
 
-/* ─── HERO LANDING ─── */
-.hero-content {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 10;
-  display: flex;
-  justify-content: flex-start;
-  align-items: flex-end;
-  padding: 0 40px 52px;
-  pointer-events: none;
-}
-
-.hero-card {
-  pointer-events: all;
-  max-width: 400px;
-  padding: 22px 26px;
-  background: rgba(8, 11, 18, 0.62);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: var(--radius);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
-}
-
-.hero-title {
-  font-family: 'Syne', sans-serif;
-  font-size: clamp(22px, 2.8vw, 34px);
-  font-weight: 800;
-  line-height: 1.15;
-  margin-bottom: 10px;
-  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.4);
-}
-
-.hero-subtitle {
-  font-size: 15px;
-  color: var(--muted);
-  margin-bottom: 20px;
-  line-height: 1.45;
-}
-
-.hero-actions {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
+.nav-btn-ghost:hover,
+.nav-btn-primary:hover {
+  transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .login-form {
@@ -1057,19 +1061,8 @@ tr:hover td { background: var(--surface2); transition: background .1s; }
   background-position: center center;
   background-repeat: no-repeat;
   z-index: 0;
-}
-
-.banner-bg::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to top,
-    rgba(8, 11, 18, 0.55) 0%,
-    rgba(8, 11, 18, 0.12) 28%,
-    transparent 55%
-  );
-  pointer-events: none;
+  animation: kenBurns 20s ease-in-out infinite alternate;
+  will-change: transform;
 }
 
 /* BANNER MOBILE */
@@ -1086,30 +1079,31 @@ tr:hover td { background: var(--surface2); transition: background .1s; }
     padding: 0 16px;
   }
 
-  .hero-content {
-    padding: 0 16px 28px;
-  }
-
-  .hero-card {
-    max-width: 100%;
-    padding: 18px 20px;
-  }
-
-  .hero-subtitle {
-    font-size: 14px;
-    margin-bottom: 16px;
-  }
-
-  .banner-bg::after {
-    background: linear-gradient(
-      to top,
-      rgba(8, 11, 18, 0.7) 0%,
-      rgba(8, 11, 18, 0.2) 35%,
-      transparent 60%
-    );
-  }
-
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .banner-bg,
+  .landing-nav,
+  .auth-panel.open,
+  .auth-panel.open .login-logo,
+  .auth-panel.open .login-sub,
+  .auth-panel.open .login-tabs,
+  .auth-panel.open .login-form:not(.hidden),
+  .login-form:not(.hidden) {
+    animation: none !important;
+  }
+
+  .auth-panel {
+    transition-duration: 0.15s;
+    filter: none;
+  }
+
+  .auth-backdrop {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+}
+
 
 </style>
 
@@ -1141,28 +1135,6 @@ tr:hover td { background: var(--surface2); transition: background .1s; }
 <div id="screen-login" style="min-height:100vh; position:relative; overflow:hidden;">
 
   <div class="banner-bg"></div>
-
-  <div class="hero-content">
-    <div class="hero-card">
-      <h1 class="hero-title">
-        Seu próximo destino começa aqui.
-      </h1>
-
-      <p class="hero-subtitle">
-        Reserve veículos de forma rápida, segura e inteligente.
-      </p>
-
-      <div class="hero-actions">
-        <button class="nav-btn-primary" onclick="abrirPainel('cadastro')">
-          Comece Agora
-        </button>
-
-        <button class="nav-btn-ghost" onclick="abrirPainel('login')">
-          Já tenho conta
-        </button>
-      </div>
-    </div>
-  </div>
 
 </div>
 
