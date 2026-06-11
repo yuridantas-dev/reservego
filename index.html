@@ -996,36 +996,49 @@ tr:hover td { background: var(--surface2); transition: background .1s; }
 
 /* ─── HERO LANDING ─── */
 .hero-content {
-  position: relative;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
   z-index: 10;
-  min-height: 100vh;
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 120px 40px 60px;
-  max-width: 720px;
+  justify-content: flex-start;
+  align-items: flex-end;
+  padding: 0 40px 52px;
+  pointer-events: none;
+}
+
+.hero-card {
+  pointer-events: all;
+  max-width: 400px;
+  padding: 22px 26px;
+  background: rgba(8, 11, 18, 0.62);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: var(--radius);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
 }
 
 .hero-title {
   font-family: 'Syne', sans-serif;
-  font-size: clamp(32px, 5vw, 52px);
+  font-size: clamp(22px, 2.8vw, 34px);
   font-weight: 800;
-  line-height: 1.12;
-  margin-bottom: 16px;
+  line-height: 1.15;
+  margin-bottom: 10px;
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.4);
 }
 
 .hero-subtitle {
-  font-size: 18px;
+  font-size: 15px;
   color: var(--muted);
-  margin-bottom: 32px;
-  max-width: 480px;
-  line-height: 1.5;
+  margin-bottom: 20px;
+  line-height: 1.45;
 }
 
 .hero-actions {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 
@@ -1050,7 +1063,13 @@ tr:hover td { background: var(--surface2); transition: background .1s; }
   content: '';
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, rgba(8,11,18,0.92) 0%, rgba(8,11,18,0.55) 55%, rgba(8,11,18,0.25) 100%);
+  background: linear-gradient(
+    to top,
+    rgba(8, 11, 18, 0.55) 0%,
+    rgba(8, 11, 18, 0.12) 28%,
+    transparent 55%
+  );
+  pointer-events: none;
 }
 
 /* BANNER MOBILE */
@@ -1068,12 +1087,26 @@ tr:hover td { background: var(--surface2); transition: background .1s; }
   }
 
   .hero-content {
-    padding: 100px 20px 40px;
+    padding: 0 16px 28px;
+  }
+
+  .hero-card {
     max-width: 100%;
+    padding: 18px 20px;
   }
 
   .hero-subtitle {
-    font-size: 16px;
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+
+  .banner-bg::after {
+    background: linear-gradient(
+      to top,
+      rgba(8, 11, 18, 0.7) 0%,
+      rgba(8, 11, 18, 0.2) 35%,
+      transparent 60%
+    );
   }
 
 }
@@ -1110,22 +1143,24 @@ tr:hover td { background: var(--surface2); transition: background .1s; }
   <div class="banner-bg"></div>
 
   <div class="hero-content">
-    <h1 class="hero-title">
-      Seu próximo destino começa aqui.
-    </h1>
+    <div class="hero-card">
+      <h1 class="hero-title">
+        Seu próximo destino começa aqui.
+      </h1>
 
-    <p class="hero-subtitle">
-      Reserve veículos de forma rápida, segura e inteligente.
-    </p>
+      <p class="hero-subtitle">
+        Reserve veículos de forma rápida, segura e inteligente.
+      </p>
 
-    <div class="hero-actions">
-      <button class="nav-btn-primary" onclick="abrirPainel('cadastro')">
-        Comece Agora
-      </button>
+      <div class="hero-actions">
+        <button class="nav-btn-primary" onclick="abrirPainel('cadastro')">
+          Comece Agora
+        </button>
 
-      <button class="nav-btn-ghost" onclick="abrirPainel('login')">
-        Já tenho conta
-      </button>
+        <button class="nav-btn-ghost" onclick="abrirPainel('login')">
+          Já tenho conta
+        </button>
+      </div>
     </div>
   </div>
 
