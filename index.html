@@ -1060,44 +1060,76 @@ tr:hover td { background: var(--surface2); transition: background .1s; }
 
     <div class="banner-bg"></div>
 
-    <div style="
-      position:absolute;
-      inset:0;
-      background:linear-gradient(
-        90deg,
-        rgba(0,0,0,0.1) 0%,
-        rgba(0,0,0,0.6) 100%
-      );
-      z-index:1;
-    "></div>
+    <div class="banner-overlay"></div>
 
     <nav class="landing-nav">
-        ...
+        <div class="landing-nav-logo">ReserveGo</div>
+
+        <div class="landing-nav-actions">
+            <button class="nav-btn-ghost" onclick="abrirPainel('login')">
+                Entrar
+            </button>
+
+            <button class="nav-btn-primary" onclick="abrirPainel('cadastro')">
+                Comece a Reservar
+            </button>
+        </div>
     </nav>
 
-    <!-- restante do conteúdo -->
+</div>
+    <!-- Conteúdo principal -->
+    <div class="hero-content">
+        <h1 class="hero-title">
+            Seu próximo destino começa aqui.
+        </h1>
+
+        <p class="hero-subtitle">
+            Reserve veículos de forma rápida, segura e inteligente.
+        </p>
+
+        <div class="hero-actions">
+            <button class="nav-btn-primary" onclick="abrirPainel('cadastro')">
+                Comece Agora
+            </button>
+
+            <button class="nav-btn-ghost" onclick="abrirPainel('login')">
+                Já tenho conta
+            </button>
+        </div>
+    </div>
 
 </div>
 
 <!-- Backdrop -->
 <div class="auth-backdrop" id="auth-backdrop" onclick="fecharPainel()"></div>
 
-<!-- Painel lateral -->
+<!-- Painel -->
 <div class="auth-panel" id="auth-panel">
 
-  <button class="auth-panel-close" onclick="fecharPainel()">✕</button>
+    <button class="auth-panel-close" onclick="fecharPainel()">
+        ✕
+    </button>
 
-  <div class="auth-panel-inner">
+    <div class="auth-panel-inner">
 
-    <div class="login-logo">ReserveGo</div>
-    <p class="login-sub">Sistema de reserva veicular</p>
+        <div class="login-logo">ReserveGo</div>
+        <p class="login-sub">Sistema de reserva veicular</p>
 
-    <div class="login-tabs">
-      <button class="login-tab active" onclick="switchLoginTab('login')">Entrar</button>
-      <button class="login-tab" onclick="switchLoginTab('cadastro')">Cadastrar</button>
+        <div class="login-tabs">
+            <button class="login-tab active"
+                onclick="switchLoginTab('login')">
+                Entrar
+            </button>
+
+            <button class="login-tab"
+                onclick="switchLoginTab('cadastro')">
+                Cadastrar
+            </button>
+        </div>
+
+        <!-- restante do formulário -->
+
     </div>
-
-  </div>
 
 </div>
 
