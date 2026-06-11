@@ -994,12 +994,45 @@ tr:hover td { background: var(--surface2); transition: background .1s; }
   box-shadow: 0 4px 16px #4f8ef740;
 }
 
-/* Ajuste mobile auth panel */
+/* ─── HERO LANDING ─── */
+.hero-content {
+  position: relative;
+  z-index: 10;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 120px 40px 60px;
+  max-width: 720px;
+}
 
-.hidden{
+.hero-title {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(32px, 5vw, 52px);
+  font-weight: 800;
+  line-height: 1.12;
+  margin-bottom: 16px;
+}
 
-    display:none;
+.hero-subtitle {
+  font-size: 18px;
+  color: var(--muted);
+  margin-bottom: 32px;
+  max-width: 480px;
+  line-height: 1.5;
+}
 
+.hero-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 /* BANNER DESKTOP */
@@ -1011,6 +1044,13 @@ tr:hover td { background: var(--surface2); transition: background .1s; }
   background-position: center center;
   background-repeat: no-repeat;
   z-index: 0;
+}
+
+.banner-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(8,11,18,0.92) 0%, rgba(8,11,18,0.55) 55%, rgba(8,11,18,0.25) 100%);
 }
 
 /* BANNER MOBILE */
@@ -1025,6 +1065,15 @@ tr:hover td { background: var(--surface2); transition: background .1s; }
 
   .landing-nav{
     padding: 0 16px;
+  }
+
+  .hero-content {
+    padding: 100px 20px 40px;
+    max-width: 100%;
+  }
+
+  .hero-subtitle {
+    font-size: 16px;
   }
 
 }
@@ -1056,86 +1105,59 @@ tr:hover td { background: var(--surface2); transition: background .1s; }
 
 
 <!-- ══════════════════ LOGIN ══════════════════ -->
- <div id="screen-login" style="min-height:100vh; position:relative; overflow:hidden;">
+<div id="screen-login" style="min-height:100vh; position:relative; overflow:hidden;">
 
-    <div class="banner-bg"></div>
+  <div class="banner-bg"></div>
 
-    <div class="banner-overlay"></div>
+  <div class="hero-content">
+    <h1 class="hero-title">
+      Seu próximo destino começa aqui.
+    </h1>
 
-    <nav class="landing-nav">
-        <div class="landing-nav-logo">ReserveGo</div>
+    <p class="hero-subtitle">
+      Reserve veículos de forma rápida, segura e inteligente.
+    </p>
 
-        <div class="landing-nav-actions">
-            <button class="nav-btn-ghost" onclick="abrirPainel('login')">
-                Entrar
-            </button>
+    <div class="hero-actions">
+      <button class="nav-btn-primary" onclick="abrirPainel('cadastro')">
+        Comece Agora
+      </button>
 
-            <button class="nav-btn-primary" onclick="abrirPainel('cadastro')">
-                Comece a Reservar
-            </button>
-        </div>
-    </nav>
-
-</div>
-    <!-- Conteúdo principal -->
-    <div class="hero-content">
-        <h1 class="hero-title">
-            Seu próximo destino começa aqui.
-        </h1>
-
-        <p class="hero-subtitle">
-            Reserve veículos de forma rápida, segura e inteligente.
-        </p>
-
-        <div class="hero-actions">
-            <button class="nav-btn-primary" onclick="abrirPainel('cadastro')">
-                Comece Agora
-            </button>
-
-            <button class="nav-btn-ghost" onclick="abrirPainel('login')">
-                Já tenho conta
-            </button>
-        </div>
+      <button class="nav-btn-ghost" onclick="abrirPainel('login')">
+        Já tenho conta
+      </button>
     </div>
+  </div>
 
 </div>
 
 <!-- Backdrop -->
 <div class="auth-backdrop" id="auth-backdrop" onclick="fecharPainel()"></div>
 
-<!-- Painel -->
+<!-- Painel de autenticação -->
 <div class="auth-panel" id="auth-panel">
 
-    <button class="auth-panel-close" onclick="fecharPainel()">
-        ✕
-    </button>
+  <button class="auth-panel-close" onclick="fecharPainel()" type="button">
+    ✕
+  </button>
 
-    <div class="auth-panel-inner">
+  <div class="auth-panel-inner">
 
-        <div class="login-logo">ReserveGo</div>
-        <p class="login-sub">Sistema de reserva veicular</p>
+    <div class="login-logo">ReserveGo</div>
+    <p class="login-sub">Sistema de reserva veicular</p>
 
-        <div class="login-tabs">
-            <button class="login-tab active"
-                onclick="switchLoginTab('login')">
-                Entrar
-            </button>
+    <div class="login-tabs">
+      <button class="login-tab active" type="button" onclick="switchLoginTab('login')">
+        Entrar
+      </button>
 
-            <button class="login-tab"
-                onclick="switchLoginTab('cadastro')">
-                Cadastrar
-            </button>
-        </div>
-
-        <!-- restante do formulário -->
-
+      <button class="login-tab" type="button" onclick="switchLoginTab('cadastro')">
+        Cadastrar
+      </button>
     </div>
 
-</div>
-
     <!-- LOGIN -->
-
-      <div id="tab-login" class="login-form">
+    <div id="tab-login" class="login-form">
 
         <div class="field">
 
@@ -1348,30 +1370,12 @@ tr:hover td { background: var(--surface2); transition: background .1s; }
 
 
         <button class="btn btn-primary btn-full"
-
                 onclick="fazerCadastro()"
-
                 id="btn-cadastro">
-
           Criar conta
-
         </button>
 
-
-
       </div>
-
-
-
-    </div>
-
-
-
-  </div>
-
-
-
-</div>
 
   </div>
 
