@@ -1000,6 +1000,24 @@ tr:hover td { background: var(--surface2); transition: background .1s; }
 
 }
 
+.banner-bg{
+  position: absolute;
+  inset: 0;
+  background-image: url('/static/banner-reservego.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 0;
+}
+
+/* Versão Mobile */
+@media (max-width: 768px){
+  .banner-bg{
+    background-image: url('static/banner-reservego-mobile.png');
+    background-position: center top;
+  }
+}
+
 </style>
 
 </head>
